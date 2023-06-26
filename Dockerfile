@@ -51,8 +51,9 @@ RUN R -e "install.packages(c(                    \
                              'maptools',         \
                              'measurements',     \
                              # misc              \
-                             'Rmisc',             \
-                             'rcarbon'           \
+                             'Rmisc',            \
+                             'rcarbon',           \
+                             'quarto'
                               ), repos='https://cran.rstudio.com'); \
                               # github installations                \
                               devtools::install_github('achetverikov/apastats', subdir = 'apastats'); \
