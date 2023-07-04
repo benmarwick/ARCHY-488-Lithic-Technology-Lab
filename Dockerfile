@@ -55,12 +55,15 @@ RUN R -e "install.packages(c(                    \
                              'rcarbon',          \
                              'quarto'            \
                               ), repos='https://cran.rstudio.com'); \
+                              # r-universe installations            \
+                              install.packages('c14bazAAR',         \
+                              repos = c(ropensci = 'https://ropensci.r-universe.dev'),                \
+                              lib='~/local/R_libs');                \
                               # github installations                \
                               devtools::install_github('achetverikov/apastats', subdir = 'apastats'); \
                               devtools::install_github(c('YuLab-SMU/ggtree',                          \
                                                          'YuLab-SMU/ggtreeExtra',                     \
-                                                         'YuLab-SMU/treeio',                          \
-                                                         'ropensci/c14bazAAR'))"
+                                                         'YuLab-SMU/treeio'))"
 
 # --- Metadata ---
 LABEL maintainer = "Ben Marwick <bmarwick@uw.edu>"  \
