@@ -57,8 +57,7 @@ RUN R -e "install.packages(c(                    \
                               ), repos='https://cran.rstudio.com'); \
                               # r-universe installations            \
                               install.packages('c14bazAAR',         \
-                              repos = c(ropensci = 'https://ropensci.r-universe.dev'),                \
-                              lib='~/local/R_libs');                \
+                              repos = c(ropensci = 'https://ropensci.r-universe.dev'));                \
                               # github installations                \
                               devtools::install_github('achetverikov/apastats', subdir = 'apastats'); \
                               devtools::install_github(c('YuLab-SMU/ggtree',                          \
