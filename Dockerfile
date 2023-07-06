@@ -53,7 +53,11 @@ RUN R -e "install.packages(c(                    \
                              # misc              \
                              'Rmisc',            \
                              'rcarbon',          \
-                             'quarto'            \
+                             'quarto',           \
+                             'Bchron',           \
+                             'plyr',             \
+                             'pbapply',          \
+                             'remotes'           \
                               ), repos='https://cran.rstudio.com'); \
                               # r-universe installations            \
                               install.packages('c14bazAAR',         \
