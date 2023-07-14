@@ -15,6 +15,7 @@ RUN R -e "install.packages(c(                    \
                              'ggpmisc',          \
                              'ggtext',           \
                              'ggridges',         \
+                             'ggmap',            \
                              'plotrix',          \
                              'RColorBrewer',     \
                              'viridis',          \
