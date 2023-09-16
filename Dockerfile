@@ -51,6 +51,10 @@ RUN R -e "install.packages(c(                    \
                              'spatstat',         \
                              'maptools',         \
                              'measurements',     \
+                             # palaeoecology     \
+                             'tidypaleo',        \
+                             'vegan',            \
+                             'rioja',            \
                              # misc              \
                              'Rmisc',            \
                              'rcarbon',          \
