@@ -52,6 +52,7 @@ RUN R -e "install.packages(c(                    \
                              'maptools',         \
                              'measurements',     \
                              # palaeoecology     \
+                             'aqp',              \
                              'tidypaleo',        \
                              'vegan',            \
                              'rioja',            \
