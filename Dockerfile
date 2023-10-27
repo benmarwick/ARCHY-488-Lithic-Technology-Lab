@@ -56,6 +56,7 @@ RUN R -e "install.packages(c(                    \
                              'tidypaleo',        \
                              'vegan',            \
                              'rioja',            \
+                             'ggtern',           \
                              # misc              \
                              'Rmisc',            \
                              'rcarbon',          \
