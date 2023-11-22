@@ -2,7 +2,6 @@
 FROM us-west1-docker.pkg.dev/uwit-mci-axdd/rttl-images/jupyter-rstudio-notebook:2.4.5
  
 # install some R packages useful for lithic analysis
-RUN  apt-get install libfontconfig1-dev jags -y
 RUN R -e "install.packages(c(                    \
                              # data manipulation \
                              'broom',            \
