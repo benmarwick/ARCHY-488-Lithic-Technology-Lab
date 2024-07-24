@@ -1,5 +1,6 @@
 # pull base image from UW-IT here https://github.com/uw-it-aca/rttl-notebooks/tree/main/rstudio
-FROM us-west1-docker.pkg.dev/uwit-mci-axdd/rttl-images/jupyter-rstudio-notebook:2.4.5
+FROM us-west1-docker.pkg.dev/uwit-mci-axdd/rttl-images/jupyter-rstudio-notebook:2.6.1-B
+
  
 # install some R packages useful for lithic analysis
 RUN R -e "install.packages(c(                    \
