@@ -5,7 +5,7 @@ FROM us-west1-docker.pkg.dev/uwit-mci-axdd/rttl-images/jupyter-rstudio-notebook:
 # install some R packages useful for lithic analysis
 RUN R -e "install.packages(c(                    \
                              # data manipulation \
-                             'MASS',
+                             'MASS',             \
                              'broom',            \
                              # plotting          \
                              'cowplot',          \
