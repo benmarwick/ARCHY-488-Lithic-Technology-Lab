@@ -50,7 +50,6 @@ RUN R -e "install.packages(c(                    \
                              'raster',           \
                              'terra',            \
                              'spatstat',         \
-                             'maptools',         \
                              'measurements',     \
                              # palaeoecology     \
                              'aqp',              \
