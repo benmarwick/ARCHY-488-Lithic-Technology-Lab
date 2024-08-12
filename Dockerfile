@@ -68,7 +68,8 @@ RUN R -e "install.packages(c(                    \
                               ), repos='https://cran.rstudio.com'); \
                               # r-universe installations            \
                               install.packages('c14bazAAR',         \
-                              repos = c(ropensci = 'https://ropensci.r-universe.dev'))"
+                              repos = c(ropensci = 'https://ropensci.r-universe.dev')); \
+                              devtools::install_url('http://cran.r-project.org/src/contrib/Archive/maptools/maptools_1.1-8.tar.gz')"
 
 # --- Metadata ---
 LABEL maintainer = "Ben Marwick <bmarwick@uw.edu>"  \
