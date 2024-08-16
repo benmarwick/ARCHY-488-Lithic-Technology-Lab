@@ -74,7 +74,7 @@ RUN R -e "install.packages(c(                    \
 # --- Metadata ---
 LABEL maintainer = "Ben Marwick <bmarwick@uw.edu>"  \
   org.opencontainers.image.description="Dockerfile for the class ARCHY 488 Lithic Technology Lab" \
-  org.opencontainers.image.created="2022-11" \
+  org.opencontainers.image.created="2022-10" \
   org.opencontainers.image.authors="Ben Marwick" \
   org.opencontainers.image.url="https://github.com/benmarwick/ARCHY-488-Lithic-Technology-Lab/blob/master/Dockerfile" \
   org.opencontainers.image.documentation="https://github.com/benmarwick/ARCHY-488-Lithic-Technology-Lab/" \
