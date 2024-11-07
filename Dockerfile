@@ -23,6 +23,7 @@ RUN R -e "install.packages(c(                    \
                              'RColorBrewer',     \
                              'viridis',          \
                              'see',              \
+                             'gridGraphics',     \
                              # file handling     \
                              'here',             \
                              'readxl',           \
