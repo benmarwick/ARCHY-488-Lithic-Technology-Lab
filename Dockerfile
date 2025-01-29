@@ -44,6 +44,7 @@ RUN R -e "install.packages(c(                    \
                              'performance',      \
                              'FSA',              \
                              'infer',            \
+                             'psych',            \
                              # mapping and GIS   \
                              'rnaturalearth',    \
                              'rnaturalearthdata',\
@@ -55,6 +56,7 @@ RUN R -e "install.packages(c(                    \
                              'spatstat',         \
                              'measurements',     \
                              # palaeoecology     \
+                             'ade4',              \
                              'aqp',              \
                              'tidypaleo',        \
                              'vegan',            \
