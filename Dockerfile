@@ -31,7 +31,6 @@ RUN R -e "install.packages(c(                    \
                              # shape             \
                              'geomorph',         \
                              'Morpho',           \
-                             'Momocs',           \
                              # images            \
                              'EBImage',          \
                              'imager',           \
@@ -74,6 +73,7 @@ RUN R -e "install.packages(c(                    \
                               # r-universe installations            \
                               install.packages('c14bazAAR',         \
                               repos = c(ropensci = 'https://ropensci.r-universe.dev')); \
+                              devtools::install_github('MomX/Momocs');                  \
                               devtools::install_url('http://cran.r-project.org/src/contrib/Archive/maptools/maptools_1.1-8.tar.gz')"
 
 # --- Metadata ---
