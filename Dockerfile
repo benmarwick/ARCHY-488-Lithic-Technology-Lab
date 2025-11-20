@@ -4,6 +4,13 @@ FROM us-west1-docker.pkg.dev/uwit-mci-axdd/rttl-images/jupyter-rstudio-notebook:
 # deal with an issue UW REF0917537
 RUN echo "PROJ_LIB=/opt/conda/share/proj" >> /opt/conda/lib/R/etc/Renviron.site
 
+# Install JAGS system library
+USER root
+RUN apt-get update && \
+    apt-get install -y jags libjags4 libjags-dev && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+
 # install some R packages useful for lithic analysis
 RUN R -e "install.packages(c(                    \
                              # data manipulation \
@@ -69,6 +76,7 @@ RUN R -e "install.packages(c(                    \
                              'plyr',             \
                              'pbapply',          \
                              'remotes'           \
+                             'rjags'             \
                               ), repos='https://cran.rstudio.com'); \
                               # r-universe installations            \
                               install.packages('c14bazAAR',         \
