@@ -84,6 +84,7 @@ RUN R -e "install.packages(c(                    \
                               # Github installations                                    \
                               devtools::install_github('achetverikov/apastats');        \
                               devtools::install_github('dgromer/apa');                  \
+                              devtools::install_github('benmarwick/polygonoverlap');    \
                               devtools::install_github('MomX/Momocs');                  \
                               devtools::install_url('http://cran.r-project.org/src/contrib/Archive/maptools/maptools_1.1-8.tar.gz')"
 
