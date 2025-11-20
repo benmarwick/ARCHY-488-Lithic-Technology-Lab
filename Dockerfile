@@ -4,11 +4,15 @@ FROM us-west1-docker.pkg.dev/uwit-mci-axdd/rttl-images/jupyter-rstudio-notebook:
 # deal with an issue UW REF0917537
 RUN echo "PROJ_LIB=/opt/conda/share/proj" >> /opt/conda/lib/R/etc/Renviron.site
 
-# Install JAGS system library
+# Install JAGS for rjags
 USER root
 RUN apt-get update && \
-    apt-get install -y jags libjags4 libjags-dev && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    apt-get install -y \
+        jags \
+        build-essential \
+        gfortran \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
 
 
 # install some R packages useful for lithic analysis
