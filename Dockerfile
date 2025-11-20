@@ -79,7 +79,7 @@ RUN R -e "install.packages(c(                    \
                              'Bchron',           \
                              'plyr',             \
                              'pbapply',          \
-                             'remotes'           \
+                             'remotes',          \
                              'rjags'             \
                               ), repos='https://cran.rstudio.com'); \
                               # r-universe installations            \
