@@ -11,6 +11,7 @@ USER root
 RUN apt-get update && apt-get install -y \
     libudunits2-dev \
     libgl1-mesa-glx \
+    libglu1-mesa-dev \
     libcurl4-gnutls-dev \
     libssl-dev \
     libxml2-dev \
@@ -35,11 +36,11 @@ RUN conda install -y -c conda-forge \
     r-raster \
     r-udunits2 \
     r-igraph \
-    r-rvcg \
-    r-morpho \
-    r-geomorph \
     r-imager \
     r-rgl \
+    r-rcpp \
+    r-rcpparmadillo \
+    r-rcppeigen \
     gdal \
     geos \
     proj \
@@ -48,6 +49,12 @@ RUN conda install -y -c conda-forge \
 
 # Switch back to notebook user
 USER $NB_USER
+
+# These packages are not on Conda and must be compiled.
+# We use Ncpus=1 to prevent Out-Of-Memory crashes during compilation.
+RUN R -e "install.packages('Rvcg', Ncpus=1, repos='https://cran.rstudio.com')"
+RUN R -e "install.packages('Morpho', Ncpus=1, repos='https://cran.rstudio.com')"
+RUN R -e "install.packages('geomorph', Ncpus=1, repos='https://cran.rstudio.com')"
 
 # Install Bioconductor Packages 
 # EBImage is not on CRAN, so we use BiocManager
@@ -111,7 +118,7 @@ RUN R -e "pkgs <- c(                         \
             missing <- pkgs[!pkgs %in% rownames(installed.packages())]; \
             stop('Failed to install: ', paste(missing, collapse=', ')); \
           }"
-
+          
 # Install r-universe packages
 RUN R -e "install.packages('c14bazAAR', repos = c(ropensci = 'https://ropensci.r-universe.dev', CRAN = 'https://cran.rstudio.com'))"
 
