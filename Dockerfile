@@ -67,7 +67,7 @@ RUN mamba install -y -c conda-forge \
 # Install OpenMx from source (as requested for flags) & BiocManager
 RUN Rscript -e "Sys.setenv(OPENMX_NO_SIMD='1'); \
     Sys.setenv(PKG_CXXFLAGS='-Wno-ignored-attributes'); \
-    install.packages(c('OpenMx','MBESS'), type='source', Ncpus=parallel::detectCores())"
+    install.packages(c('OpenMx','MBESS'), repos='https://packagemanager.posit.co/cran/__linux__/jammy/latest', Ncpus=parallel::detectCores())"
 
 RUN Rscript -e "install.packages('BiocManager'); \
     BiocManager::install('EBImage', update=FALSE, ask=FALSE, Ncpus=parallel::detectCores())"
