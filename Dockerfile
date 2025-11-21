@@ -81,7 +81,7 @@ RUN Rscript -e "install.packages('pak' , repos='https://cloud.r-project.org'); \
     Sys.setenv(OPENMX_NO_SIMD='1'); \
     Sys.setenv(PKG_CXXFLAGS='-Wno-ignored-attributes'); \
     # Install the few CRAN packages not on Conda
-    pak::pkg_install(c('tabula', 'tesselle', 'dimensio', 'tidypaleo', 'rcarbon', 'Bchron', ''geomorph', 'Morpho')); \
+    pak::pkg_install(c('tabula', 'tesselle', 'dimensio', 'tidypaleo', 'rcarbon', 'Bchron', 'geomorph', 'Morpho')); \
     # Install GitHub packages
     pak::pkg_install(c('ropensci/c14bazAAR', 'achetverikov/apastats', 'dgromer/apa', 'MomX/Momocs', 'benmarwick/polygonoverlap'));"    
 
