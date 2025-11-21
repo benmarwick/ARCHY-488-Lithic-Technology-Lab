@@ -58,8 +58,8 @@ RUN mamba install -y -c conda-forge \
 # -------------------------------------------------------------------
 USER $NB_USER
 
-RUN R --no-save --no-restore -e "if (!requireNamespace('BiocManager', quietly = TRUE)) install.packages('BiocManager'); BiocManager::install('EBImage')"
-
+RUN R -e "install.packages('BiocManager', repos='https://cran.rstudio.com'); \
+          BiocManager::install('EBImage', update=FALSE, ask=FALSE)"
 # -------------------------------------------------------------------
 # INSTALL CRAN PACKAGES (safe ones; compiled ones now succeed)
 # -------------------------------------------------------------------
