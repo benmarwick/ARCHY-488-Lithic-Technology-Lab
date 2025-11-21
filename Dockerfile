@@ -102,9 +102,9 @@ RUN R -e "pkgs <- c(                         \
                     'quarto',                 \
                     'Bchron',                 \
                     'plyr',                   \
-                    'pbapply'                 \
-                    Morpho,     \
-                    geomorph, \
+                    'pbapply',                \
+                    'Morpho',     \
+                    'geomorph' \
                     );                        \
           install.packages(pkgs, repos='https://cran.rstudio.com'); \
           if (!all(pkgs %in% rownames(installed.packages()))) {     \
