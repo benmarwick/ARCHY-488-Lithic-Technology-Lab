@@ -39,7 +39,6 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     libmagick++-dev \
     libmagickwand-dev \
     libmagickcore-dev \
-    libgdal-dev  \
     libgeos-dev \
     libproj-dev \
     libsqlite3-dev \
