@@ -52,6 +52,7 @@ RUN mamba install -y -c conda-forge \
     r-sf \
     r-terra \
     r-mass \
+    r-remotes \ 
     fftw \
     gdal \
     && mamba clean -afy
