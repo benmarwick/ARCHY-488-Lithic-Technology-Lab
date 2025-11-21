@@ -3,8 +3,10 @@
 # -------------------------------------------------------------------
 FROM us-west1-docker.pkg.dev/uwit-mci-axdd/rttl-images/jupyter-rstudio-notebook:2.6.1-B
 
-# Fix PROJ issue
-RUN echo "PROJ_LIB=/opt/conda/share/proj" >> /opt/conda/lib/R/etc/Renviron.site
+# Fix PROJ issue & Set Env Vars globally
+ENV PROJ_LIB=/opt/conda/share/proj \
+    OPENMX_NO_SIMD=1 \
+    PKG_CXXFLAGS='-Wno-ignored-attributes'
 
 # -------------------------------------------------------------------
 # SYSTEM LIBRARIES + COMPILERS
@@ -31,13 +33,18 @@ RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 \
 
 RUN echo "CXXFLAGS += -O3 -march=core2 -msse2" >> /opt/conda/lib/R/etc/Makeconf
 
+# R REPO CONFIGURATION (Binaries)
 # -------------------------------------------------------------------
-# SPEED OPTIMIZATION: Use Public Package Manager (Binaries)
-# -------------------------------------------------------------------
-# This determines the Linux codename (e.g., jammy, focal) and sets the repo
-# This prevents compiling from source for 90% of packages.
-RUN Rscript -e 'options(repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/jammy/latest"));' \
-    && echo 'options(repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/jammy/latest"))' >> /opt/conda/lib/R/etc/Rprofile.site
+# 1. Posit Package Manager (CRAN Binaries)
+# 2. r-universe (GitHub Binaries for Momocs and ropensci)
+RUN Rscript -e 'options(repos = c( \
+    CRAN = "https://packagemanager.posit.co/cran/__linux__/jammy/latest", \
+    ropensci = "https://ropensci.r-universe.dev", \
+    momx = "https://momx.r-universe.dev"));' \
+    && echo 'options(repos = c( \
+    CRAN = "https://packagemanager.posit.co/cran/__linux__/jammy/latest", \
+    ropensci = "https://ropensci.r-universe.dev", \
+    momx = "https://momx.r-universe.dev"))' >> /opt/conda/lib/R/etc/Rprofile.site
 
 # -------------------------------------------------------------------
 # Ensure site-library exists
@@ -77,22 +84,30 @@ RUN Rscript -e "install.packages('BiocManager'); \
 # -------------------------------------------------------------------
 # Remaining CRAN & GitHub packages (Source installs)
 # -------------------------------------------------------------------
-RUN Rscript -e "Sys.setenv(OPENMX_NO_SIMD='1'); \
-    Sys.setenv(PKG_CXXFLAGS='-Wno-ignored-attributes'); \
-    # Install OpenMx and MBESS as binaries via standard R first
-    install.packages(c('OpenMx', 'MBESS'))"
+
     
-RUN Rscript -e "Sys.setenv(OPENMX_NO_SIMD='1'); \
+
+RUN Rscript -e "\
+    # 1. Install standard binaries (including OpenMx/MBESS to avoid compiling) \
+    Sys.setenv(OPENMX_NO_SIMD='1'); \
     Sys.setenv(PKG_CXXFLAGS='-Wno-ignored-attributes'); \
-    # Install the few CRAN packages not on Conda
-    pak::pkg_install(c('tabula', 'tesselle', 'dimensio', 'tidypaleo', 'rcarbon', 'Bchron', 'geomorph', 'Morpho'), upgrade = FALSE)" 
-    
-# Install GitHub packages
-# We re-declare the C++ flags here because 'dgromer/apa' triggers a source rebuild 
-# of OpenMx, and it will fail without these specific compiler settings.
-RUN Rscript -e "Sys.setenv(OPENMX_NO_SIMD='1'); \
-    Sys.setenv(PKG_CXXFLAGS='-Wno-ignored-attributes'); \
-    pak::pkg_install(c('ropensci/c14bazAAR', 'achetverikov/apastats', 'dgromer/apa', 'MomX/Momocs', 'benmarwick/polygonoverlap'), upgrade = FALSE);"
+    install.packages(c('OpenMx', 'MBESS')); \
+    \
+    # 2. Install CRAN/Bioc/Universe pkgs via pak (Parallel, Fast) \
+    # Note: EBImage, c14bazAAR, and Momocs are now binaries thanks to repos setup \
+    pak::pkg_install(c( \
+        'EBImage', \
+        'tabula', 'tesselle', 'dimensio', 'tidypaleo', 'rcarbon', 'Bchron', 'geomorph', 'Morpho',  \
+        'c14bazAAR', 'Momocs' \
+    ), upgrade = FALSE); \
+    \
+    # 3. Install remaining pure GitHub pkgs (Source only) \
+    # We keep the flags env var set at the top of Dockerfile to handle 'apa' dependency builds \
+    pak::pkg_install(c( \
+        'achetverikov/apastats', \
+        'dgromer/apa', \
+        'benmarwick/polygonoverlap' \
+    ), upgrade = FALSE);"
 
 USER $NB_USER
 
