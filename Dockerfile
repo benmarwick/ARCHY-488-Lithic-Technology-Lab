@@ -90,6 +90,25 @@ RUN Rscript -e "\
         'benmarwick/polygonoverlap' \
     ), upgrade = 'never');"
 
+# After all installations, remove any conda-installed R packages that have duplicates
+RUN Rscript -e "
+    # Get all packages in both libraries
+    conda_lib <- '/opt/conda/lib/R/library'
+    site_lib <- '/opt/conda/lib/R/site-library'
+    
+    conda_pkgs <- list.files(conda_lib)
+    site_pkgs <- list.files(site_lib)
+    
+    # Find duplicates
+    duplicates <- intersect(conda_pkgs, site_pkgs)
+    
+    # Remove duplicates from conda library (keeping site-library versions)
+    if(length(duplicates) > 0) {
+        unlink(file.path(conda_lib, duplicates), recursive = TRUE)
+        message('Removed duplicates: ', paste(duplicates, collapse = ', '))
+    }
+"
+
 USER $NB_USER
 
 # -------------------------------------------------------------------
