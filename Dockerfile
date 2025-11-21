@@ -58,9 +58,10 @@ RUN mamba install -y -c conda-forge \
     r-viridis r-see r-gridgraphics r-here r-readxl r-rio \
     r-factominer r-factoextra r-performance r-fsa r-infer r-psych \
     r-rnaturalearth r-rnaturalearthdata r-maps r-measurements \
-    r-ade4 r-aqp r-vegan r-rioja r-rmisc r-quarto r-bchron \
-    r-plyr r-pbapply r-morpho r-geomorph \
+    r-ade4 r-aqp r-vegan r-rioja r-rmisc r-quarto \
+    r-plyr r-pbapply \
     && mamba clean -afy
+
 
 # -------------------------------------------------------------------
 # CRAN packages (Now using Binaries + Parallel)
@@ -80,7 +81,7 @@ RUN Rscript -e "install.packages('pak' , repos='https://cloud.r-project.org'); \
     Sys.setenv(OPENMX_NO_SIMD='1'); \
     Sys.setenv(PKG_CXXFLAGS='-Wno-ignored-attributes'); \
     # Install the few CRAN packages not on Conda
-    pak::pkg_install(c('tabula', 'tesselle', 'dimensio', 'tidypaleo', 'rcarbon')); \
+    pak::pkg_install(c('tabula', 'tesselle', 'dimensio', 'tidypaleo', 'rcarbon', 'Bchron', ''geomorph', 'Morpho')); \
     # Install GitHub packages
     pak::pkg_install(c('ropensci/c14bazAAR', 'achetverikov/apastats', 'dgromer/apa', 'MomX/Momocs', 'benmarwick/polygonoverlap'));"    
 
