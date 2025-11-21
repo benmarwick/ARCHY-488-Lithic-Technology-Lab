@@ -41,6 +41,9 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     libmagickcore-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Force Eigen/OpenMx to use a CPU instruction set supported by GitHub Actions runners
+RUN echo "CXXFLAGS += -O3 -march=core2 -msse2" >> /opt/conda/lib/R/etc/Makeconf
+
 # GCC/G++ version pinning
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 && \
     update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 100
@@ -51,6 +54,9 @@ ENV CXX=g++
 ENV FC=gfortran
 ENV PKG_CXXFLAGS="-Wno-ignored-attributes"
 ENV OPENMX_NO_SIMD=1
+
+# Install RcppEigen before OpenMx
+RUN mamba install -y r-rcppeigen r-rcpp
 
 # -------------------------------------------------------------------
 # Mamba: install conda-supported R packages
