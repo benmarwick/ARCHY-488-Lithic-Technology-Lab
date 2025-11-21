@@ -9,7 +9,6 @@ RUN echo "PROJ_LIB=/opt/conda/share/proj" >> /opt/conda/lib/R/etc/Renviron.site
 USER root
 
 # Install system dependencies
-# Install system dependencies
 # Added libgl1-mesa-glx (needed for spatial plotting)
 # Added libcurl4-openssl-dev, libssl-dev, libxml2-dev as backups for other CRAN packages
 RUN apt-get update && apt-get install -y \
@@ -18,6 +17,8 @@ RUN apt-get update && apt-get install -y \
     libcurl4-openssl-dev \
     libssl-dev \
     libxml2-dev \
+    libfftw3-dev \
+    libtiff-dev \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
@@ -34,6 +35,7 @@ RUN conda install -y -c conda-forge \
     r-spatstat \
     r-raster \
     r-udunits2 \
+    r-mass \
     gdal \
     geos \
     proj \
