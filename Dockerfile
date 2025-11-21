@@ -48,7 +48,6 @@ USER $NB_USER
 # Install CRAN packages with error checking
 RUN R -e "pkgs <- c(                         \
                     # data manipulation      \
-                    'MASS',                   \
                     'broom',                  \
                     # plotting               \
                     'cowplot',                \
