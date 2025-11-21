@@ -4,6 +4,18 @@ FROM us-west1-docker.pkg.dev/uwit-mci-axdd/rttl-images/jupyter-rstudio-notebook:
 # deal with an issue UW REF0917537
 RUN echo "PROJ_LIB=/opt/conda/share/proj" >> /opt/conda/lib/R/etc/Renviron.site
 
+# Install system dependencies for spatial packages
+USER root
+RUN apt-get update && apt-get install -y \
+    libgdal-dev \
+    libgeos-dev \
+    libproj-dev \
+    libudunits2-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Switch back to notebook user if needed
+USER $NB_USER
+
 # Install devtools and remotes first
 RUN R -e "install.packages(c('devtools', 'remotes'), repos='https://cran.rstudio.com')"
 
@@ -90,7 +102,7 @@ RUN R -e "remotes::install_github('dgromer/apa')" && \
 RUN R -e "remotes::install_github('MomX/Momocs')" && \
     R -e "if (!require('Momocs', quietly=TRUE)) stop('Failed to install Momocs')"
 
-    RUN R -e "remotes::install_github('benmarwick/polygonoverlap)" && \
+    RUN R -e "remotes::install_github('benmarwick/polygonoverlap')" && \
     R -e "if (!require('polygonoverlap', quietly=TRUE)) stop('Failed to install polygonoverlap')"
 
 # Verify key packages are installed
@@ -104,11 +116,11 @@ RUN R -e "required_pkgs <- c('Momocs', 'polygonoverlap', 'sf', 'terra'); \
           }"
 
 # --- Metadata ---
-LABEL maintainer = "Ben Marwick <bmarwick@uw.edu>"  \
-  org.opencontainers.image.description="Dockerfile for the class ARCHY 488 Lithic Technology Lab" \
-  org.opencontainers.image.created="2022-10" \
-  org.opencontainers.image.authors="Ben Marwick" \
-  org.opencontainers.image.url="https://github.com/benmarwick/ARCHY-488-Lithic-Technology-Lab/blob/master/Dockerfile" \
-  org.opencontainers.image.documentation="https://github.com/benmarwick/ARCHY-488-Lithic-Technology-Lab/" \
-  org.opencontainers.image.licenses="Apache-2.0" \
-  org.label-schema.description="Reproducible workflow image (license: Apache 2.0)"
+LABEL maintainer="Ben Marwick <bmarwick@uw.edu>" \
+      org.opencontainers.image.description="Dockerfile for the class ARCHY 488 Lithic Technology Lab" \
+      org.opencontainers.image.created="2022-10" \
+      org.opencontainers.image.authors="Ben Marwick" \
+      org.opencontainers.image.url="https://github.com/benmarwick/ARCHY-488-Lithic-Technology-Lab/blob/master/Dockerfile" \
+      org.opencontainers.image.documentation="https://github.com/benmarwick/ARCHY-488-Lithic-Technology-Lab/" \
+      org.opencontainers.image.licenses="Apache-2.0" \
+      org.label-schema.description="Reproducible workflow image (license: Apache 2.0)"
