@@ -4,14 +4,6 @@ FROM us-west1-docker.pkg.dev/uwit-mci-axdd/rttl-images/jupyter-rstudio-notebook:
 # deal with an issue UW REF0917537
 RUN echo "PROJ_LIB=/opt/conda/share/proj" >> /opt/conda/lib/R/etc/Renviron.site
 
-# Install system dependencies for spatial packages
-RUN apt-get update && apt-get install -y \
-    libgdal-dev \
-    libgeos-dev \
-    libproj-dev \
-    libudunits2-dev \
-    && rm -rf /var/lib/apt/lists/*
-
 # Install devtools and remotes first
 RUN R -e "install.packages(c('devtools', 'remotes'), repos='https://cran.rstudio.com')"
 
