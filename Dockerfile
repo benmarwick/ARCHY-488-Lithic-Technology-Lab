@@ -102,7 +102,7 @@ RUN R -e "remotes::install_github('dgromer/apa')" && \
 RUN R -e "remotes::install_github('MomX/Momocs')" && \
     R -e "if (!require('Momocs', quietly=TRUE)) stop('Failed to install Momocs')"
 
-    RUN R -e "remotes::install_github('benmarwick/polygonoverlap')" && \
+RUN R -e "remotes::install_github('benmarwick/polygonoverlap')" && \
     R -e "if (!require('polygonoverlap', quietly=TRUE)) stop('Failed to install polygonoverlap')"
 
 # Verify key packages are installed
