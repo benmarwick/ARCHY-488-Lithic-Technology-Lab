@@ -37,7 +37,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     libmagickcore-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Make GCC/G++ version 10 default (fixed syntax)
+# Make GCC/G++ version 10 default
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 \
  && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 100 \
  && update-alternatives --set gcc /usr/bin/gcc-10 \
@@ -47,10 +47,10 @@ RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 \
 RUN echo "CXXFLAGS += -O3 -march=core2 -msse2" >> /opt/conda/lib/R/etc/Makeconf
 
 # -------------------------------------------------------------------
-# Ensure site-library exists and assign to current user safely
+# Ensure site-library exists and assign to notebook user safely
 # -------------------------------------------------------------------
 RUN mkdir -p /opt/conda/lib/R/site-library \
-    && chown -R $(id -u):$(id -g) /opt/conda/lib/R/site-library
+    && chown -R $NB_UID:$NB_GID /opt/conda/lib/R/site-library
 
 # -------------------------------------------------------------------
 # MAMBA: install conda packages
@@ -77,18 +77,13 @@ RUN Rscript -e "options(repos='https://cloud.r-project.org'); \
     install.packages(c('OpenMx','MBESS'), type='source')"
 
 # -------------------------------------------------------------------
-# Switch back to notebook user
-# -------------------------------------------------------------------
-USER $NB_USER
-
-# -------------------------------------------------------------------
-# Bioconductor EBImage
+# Bioconductor EBImage system-wide
 # -------------------------------------------------------------------
 RUN R -e "install.packages('BiocManager', repos='https://cloud.r-project.org'); \
           BiocManager::install('EBImage', update=FALSE, ask=FALSE)"
 
 # -------------------------------------------------------------------
-# CRAN packages
+# CRAN packages system-wide
 # -------------------------------------------------------------------
 RUN R -e "pkgs <- c( \
     'broom','cowplot','ggbeeswarm','GGally','ggcorrplot','ggrepel','ggpmisc','ggtext','ggridges','ggmap', \
@@ -108,17 +103,10 @@ RUN R -e "install.packages('c14bazAAR', repos=c(ropensci='https://ropensci.r-uni
 # -------------------------------------------------------------------
 # GitHub packages
 # -------------------------------------------------------------------
-RUN R -e "remotes::install_github('achetverikov/apastats')" && \
-    R -e "if (!require('apastats', quietly=TRUE)) stop('Failed to install apastats')"
-
-RUN R -e "remotes::install_github('dgromer/apa')" && \
-    R -e "if (!require('apa', quietly=TRUE)) stop('Failed to install apa')"
-
-RUN R -e "remotes::install_github('MomX/Momocs')" && \
-    R -e "if (!require('Momocs', quietly=TRUE)) stop('Failed to install Momocs')"
-
-RUN R -e "remotes::install_github('benmarwick/polygonoverlap')" && \
-    R -e "if (!require('polygonoverlap', quietly=TRUE)) stop('Failed to install polygonoverlap')"
+RUN R -e "remotes::install_github('achetverikov/apastats'); \
+          remotes::install_github('dgromer/apa'); \
+          remotes::install_github('MomX/Momocs'); \
+          remotes::install_github('benmarwick/polygonoverlap')"
 
 # -------------------------------------------------------------------
 # Package sanity check
@@ -127,6 +115,11 @@ RUN R -e "required_pkgs <- c('Momocs','polygonoverlap','sf','terra','MASS','Morp
           installed <- sapply(required_pkgs, require, quietly=TRUE, character.only=TRUE); \
           if (!all(installed)) { missing <- required_pkgs[!installed]; warning('Some packages failed: ', paste(missing, collapse=', ')); } \
           else message('All key packages installed and loadable')"
+
+# -------------------------------------------------------------------
+# Switch back to notebook user
+# -------------------------------------------------------------------
+USER $NB_USER
 
 # -------------------------------------------------------------------
 # Metadata
