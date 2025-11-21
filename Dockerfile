@@ -88,8 +88,11 @@ RUN Rscript -e "Sys.setenv(OPENMX_NO_SIMD='1'); \
     pak::pkg_install(c('tabula', 'tesselle', 'dimensio', 'tidypaleo', 'rcarbon', 'Bchron', 'geomorph', 'Morpho'), upgrade = FALSE)" 
     
 # Install GitHub packages
-RUN Rscript -e "pak::pkg_install(c('ropensci/c14bazAAR', 'achetverikov/apastats', 'dgromer/apa', 'MomX/Momocs', 'benmarwick/polygonoverlap'), upgrade = FALSE);"    
-
+# We re-declare the C++ flags here because 'dgromer/apa' triggers a source rebuild 
+# of OpenMx, and it will fail without these specific compiler settings.
+RUN Rscript -e "Sys.setenv(OPENMX_NO_SIMD='1'); \
+    Sys.setenv(PKG_CXXFLAGS='-Wno-ignored-attributes'); \
+    pak::pkg_install(c('ropensci/c14bazAAR', 'achetverikov/apastats', 'dgromer/apa', 'MomX/Momocs', 'benmarwick/polygonoverlap'), upgrade = FALSE);"
 
 USER $NB_USER
 
