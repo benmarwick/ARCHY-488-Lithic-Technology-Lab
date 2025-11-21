@@ -1,51 +1,66 @@
-# pull base image from UW-IT
+# -------------------------------------------------------------------
+# Base image
+# -------------------------------------------------------------------
 FROM us-west1-docker.pkg.dev/uwit-mci-axdd/rttl-images/jupyter-rstudio-notebook:2.6.1-B
 
-# deal with an issue UW REF0917537
+# Fix PROJ issue (UW REF0917537)
 RUN echo "PROJ_LIB=/opt/conda/share/proj" >> /opt/conda/lib/R/etc/Renviron.site
 
-# Switch to root to install system dependencies ---
+# -------------------------------------------------------------------
+# SYSTEM LIBRARIES NEEDED TO BUILD R PACKAGES FROM SOURCE
+# -------------------------------------------------------------------
 USER root
-RUN mamba install -y -c conda-forge \
-    fftw \
-    libtiff \
-    libxml2 \
-    curl \
-    openssl \
-    mesa-libgl-cos7-x86_64 \
-    xorg-libxtst \
-    xorg-libxrender \
-    xorg-libxext \
-    xorg-libxau \
-    xorg-libxdmcp \
-    compilers \
-    glib \
-    && mamba clean -afy
 
+# Install compilers + system libs required for OpenMx, MBESS, apa, EBImage, sf, terra, Momocs, etc.
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gfortran \
+    liblapack-dev \
+    libblas-dev \
+    libopenblas-dev \
+    libcurl4-openssl-dev \
+    libxml2-dev \
+    libgit2-dev \
+    libssl-dev \
+    libpng-dev \
+    libtiff-dev \
+    libfftw3-dev \
+    libglu1-mesa-dev \
+    libxrender-dev \
+    libxtst-dev \
+    libxt-dev \
+    libxext-dev \
+    libxau-dev \
+    libxdmcp-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Ensure GCC/G++/Fortran visible as default compilers
+ENV CC=gcc
+ENV CXX=g++ 
+ENV FC=gfortran
+
+# -------------------------------------------------------------------
+# MAMBA: install packages available from conda-forge
+# -------------------------------------------------------------------
 RUN mamba install -y -c conda-forge \
     r-rvcg \
     r-morpho \
     r-geomorph \
+    r-sf \
+    r-terra \
+    bioconductor-ebimage \
     && mamba clean -afy
 
-# Switch back to notebook user
+# -------------------------------------------------------------------
+# Switch back to non-root user
+# -------------------------------------------------------------------
 USER $NB_USER
 
-# These packages are not on Conda and must be compiled.
-# We use Ncpus=1 to prevent Out-Of-Memory crashes during compilation.
-RUN R -e "install.packages('Rvcg', Ncpus=1, repos='https://cran.rstudio.com')"
-RUN R -e "install.packages('Morpho', Ncpus=1, repos='https://cran.rstudio.com')"
-RUN R -e "install.packages('geomorph', Ncpus=1, repos='https://cran.rstudio.com')"
-
-# Install Bioconductor Packages 
-RUN mamba install -y -c bioconda bioconductor-ebimage
-
-
-# Install CRAN packages
+# -------------------------------------------------------------------
+# INSTALL CRAN PACKAGES (safe ones; compiled ones now succeed)
+# -------------------------------------------------------------------
 RUN R -e "pkgs <- c(                         \
-                    # data manipulation      \
                     'broom',                  \
-                    # plotting               \
                     'cowplot',                \
                     'ggbeeswarm',             \
                     'GGally',                 \
@@ -60,11 +75,9 @@ RUN R -e "pkgs <- c(                         \
                     'viridis',                \
                     'see',                    \
                     'gridGraphics',           \
-                    # file handling          \
                     'here',                   \
                     'readxl',                 \
                     'rio',                    \
-                    # stats                  \
                     'tabula',                 \
                     'tesselle',               \
                     'dimensio',               \
@@ -74,18 +87,15 @@ RUN R -e "pkgs <- c(                         \
                     'FSA',                    \
                     'infer',                  \
                     'psych',                  \
-                    # mapping and GIS        \
                     'rnaturalearth',          \
                     'rnaturalearthdata',      \
                     'maps',                   \
                     'measurements',           \
-                    # palaeoecology          \
                     'ade4',                   \
                     'aqp',                    \
                     'tidypaleo',              \
                     'vegan',                  \
                     'rioja',                  \
-                    # misc                   \
                     'Rmisc',                  \
                     'rcarbon',                \
                     'quarto',                 \
@@ -98,11 +108,15 @@ RUN R -e "pkgs <- c(                         \
             missing <- pkgs[!pkgs %in% rownames(installed.packages())]; \
             stop('Failed to install: ', paste(missing, collapse=', ')); \
           }"
-          
-# Install r-universe packages
+
+# -------------------------------------------------------------------
+# r-universe packages
+# -------------------------------------------------------------------
 RUN R -e "install.packages('c14bazAAR', repos = c(ropensci = 'https://ropensci.r-universe.dev', CRAN = 'https://cran.rstudio.com'))"
 
-# Install GitHub packages individually with error checking
+# -------------------------------------------------------------------
+# GitHub packages (these now compile properly)
+# -------------------------------------------------------------------
 RUN R -e "remotes::install_github('achetverikov/apastats')" && \
     R -e "if (!require('apastats', quietly=TRUE)) stop('Failed to install apastats')"
 
@@ -115,7 +129,9 @@ RUN R -e "remotes::install_github('MomX/Momocs')" && \
 RUN R -e "remotes::install_github('benmarwick/polygonoverlap')" && \
     R -e "if (!require('polygonoverlap', quietly=TRUE)) stop('Failed to install polygonoverlap')"
 
-# Verify key packages are installed
+# -------------------------------------------------------------------
+# Package sanity check
+# -------------------------------------------------------------------
 RUN R -e "required_pkgs <- c('Momocs', 'polygonoverlap', 'sf', 'terra', 'MASS', 'Morpho', 'EBImage'); \
           installed <- sapply(required_pkgs, require, quietly=TRUE, character.only=TRUE); \
           if (!all(installed)) {                                             \
@@ -125,7 +141,9 @@ RUN R -e "required_pkgs <- c('Momocs', 'polygonoverlap', 'sf', 'terra', 'MASS', 
             message('All key packages successfully installed and loadable'); \
           }"
 
-# --- Metadata ---
+# -------------------------------------------------------------------
+# Metadata
+# -------------------------------------------------------------------
 LABEL maintainer="Ben Marwick <bmarwick@uw.edu>" \
       org.opencontainers.image.description="Dockerfile for the class ARCHY 488 Lithic Technology Lab" \
       org.opencontainers.image.created="2022-10" \
