@@ -9,16 +9,26 @@ RUN echo "PROJ_LIB=/opt/conda/share/proj" >> /opt/conda/lib/R/etc/Renviron.site
 USER root
 
 # Install system dependencies
-# Added libgl1-mesa-glx (often needed for spatial plotting)
+# Install system dependencies
+# Added libgl1-mesa-glx (needed for spatial plotting)
+# Added libcurl4-openssl-dev, libssl-dev, libxml2-dev as backups for other CRAN packages
 RUN apt-get update && apt-get install -y \
     libudunits2-dev \
     libgl1-mesa-glx \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    libxml2-dev \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Installing terra/sf from source fails due to GLIBC mismatch. 
-# We install binaries from conda-forge instead.
+# We install 'devtools', 'remotes', and 'curl' here to avoid 
+# compilation errors with the Conda compiler vs System headers.
 RUN conda install -y -c conda-forge \
+    r-devtools \
+    r-remotes \
+    r-curl \
+    r-openssl \
+    r-xml2 \
     r-sf \
     r-terra \
     r-spatstat \
@@ -32,9 +42,6 @@ RUN conda install -y -c conda-forge \
 
 # Switch back to notebook user if needed
 USER $NB_USER
-
-# Install devtools and remotes first
-RUN R -e "install.packages(c('devtools', 'remotes'), repos='https://cran.rstudio.com')"
 
 # Install CRAN packages with error checking
 RUN R -e "pkgs <- c(                         \
