@@ -47,13 +47,13 @@ RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 \
 RUN echo "CXXFLAGS += -O3 -march=core2 -msse2" >> /opt/conda/lib/R/etc/Makeconf
 
 # -------------------------------------------------------------------
-# Ensure site-library exists and assign to notebook user safely
+# Ensure site-library exists
 # -------------------------------------------------------------------
 RUN mkdir -p /opt/conda/lib/R/site-library \
     && chown -R $NB_UID:$NB_GID /opt/conda/lib/R/site-library
 
 # -------------------------------------------------------------------
-# MAMBA: install conda packages
+# MAMBA: install R + core packages from conda-forge (sf + GDAL compatible)
 # -------------------------------------------------------------------
 RUN mamba install -y -c conda-forge \
     r-base=4.4 \
@@ -64,6 +64,7 @@ RUN mamba install -y -c conda-forge \
     r-remotes \
     fftw \
     gdal \
+    sqlite \
     r-rcpp \
     r-rcppeigen \
     && mamba clean -afy
