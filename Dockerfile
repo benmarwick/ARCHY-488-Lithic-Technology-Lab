@@ -59,7 +59,7 @@ RUN mamba install -y -c conda-forge \
     r-factominer r-factoextra r-performance r-fsa r-infer r-psych \
     r-rnaturalearth r-rnaturalearthdata r-maps r-measurements \
     r-ade4 r-aqp r-vegan r-rioja r-rmisc r-quarto \
-    r-plyr r-pbapply \
+    r-plyr r-pbapply r-pak \
     && mamba clean -afy
 
 
@@ -77,8 +77,7 @@ RUN Rscript -e "install.packages('BiocManager'); \
 # -------------------------------------------------------------------
 # Remaining CRAN & GitHub packages (Source installs)
 # -------------------------------------------------------------------
-RUN Rscript -e "install.packages('pak' , repos='https://cloud.r-project.org'); \
-    Sys.setenv(OPENMX_NO_SIMD='1'); \
+RUN Rscript -e "Sys.setenv(OPENMX_NO_SIMD='1'); \
     Sys.setenv(PKG_CXXFLAGS='-Wno-ignored-attributes'); \
     # Install the few CRAN packages not on Conda
     pak::pkg_install(c('tabula', 'tesselle', 'dimensio', 'tidypaleo', 'rcarbon', 'Bchron', 'geomorph', 'Morpho')); \
