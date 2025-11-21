@@ -83,16 +83,17 @@ RUN Rscript -e "pkgs <- c( \
     missing <- pkgs[!pkgs %in% rownames(installed.packages())]; \
     if (length(missing)) stop('Failed to install: ', paste(missing, collapse=', '));"
 
+
 # -------------------------------------------------------------------
 # r-universe & GitHub (Use pak for faster dependency resolution)
 # -------------------------------------------------------------------
-# Installing 'pak' first significantly speeds up github installs
-RUN Rscript -e "install.packages('pak', repos = repos='https://cloud.r-project.org')" \
-RUN Rscript -e "pak::pkg_install('ropensci/c14bazAAR')"
-RUN Rscript -e "pak::pkg_install('achetverikov/apastats')"
-RUN Rscript -e "pak::pkg_install('dgromer/apa')"
-RUN Rscript -e "pak::pkg_install('MomX/Momocs')"
-RUN Rscript -e "pak::pkg_install('benmarwick/polygonoverlap')"
+# We set OpenMx flags here because 'dgromer/apa' pulls in 'OpenMx', 
+# and if pak decides to rebuild it, it needs these flags to succeed.
+RUN Rscript -e "install.packages('pak', repos='https://cloud.r-project.org'); \
+    Sys.setenv(OPENMX_NO_SIMD='1'); \
+    Sys.setenv(PKG_CXXFLAGS='-Wno-ignored-attributes'); \
+    pak::pkg_install('ropensci/c14bazAAR'); \
+    pak::pkg_install(c('achetverikov/apastats', 'dgromer/apa', 'MomX/Momocs', 'benmarwick/polygonoverlap'));"
 
 # -------------------------------------------------------------------
 # Package sanity check
