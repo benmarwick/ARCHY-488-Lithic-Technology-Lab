@@ -39,7 +39,14 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     libmagick++-dev \
     libmagickwand-dev \
     libmagickcore-dev \
+    libgdal-dev  \
+    libgeos-dev \
+    libproj-dev \
+    libsqlite3-dev \
+    libxml2-dev \
+    libssl-dev \
     && rm -rf /var/lib/apt/lists/*
+
 
 # Force Eigen/OpenMx to use a CPU instruction set supported by GitHub Actions runners
 RUN echo "CXXFLAGS += -O3 -march=core2 -msse2" >> /opt/conda/lib/R/etc/Makeconf
@@ -69,6 +76,7 @@ RUN mamba install -y -c conda-forge \
     r-remotes \
     fftw \
     gdal \
+    sqlite \
     && mamba clean -afy
 
 # -------------------------------------------------------------------
