@@ -5,6 +5,8 @@ FROM us-west1-docker.pkg.dev/uwit-mci-axdd/rttl-images/jupyter-rstudio-notebook:
 
 # Fix PROJ issue (UW REF0917537)
 RUN echo "PROJ_LIB=/opt/conda/share/proj" >> /opt/conda/lib/R/etc/Renviron.site
+RUN mamba install -y -c conda-forge r-base=4.3
+RUN echo "r-base 4.3.*" >> /opt/conda/conda-meta/pinned
 
 # -------------------------------------------------------------------
 # SYSTEM LIBRARIES NEEDED TO BUILD R PACKAGES FROM SOURCE
@@ -44,8 +46,6 @@ ENV FC=gfortran
 # -------------------------------------------------------------------
 RUN mamba install -y -c conda-forge \
     r-rvcg \
-    r-morpho \
-    r-geomorph \
     r-sf \
     r-terra \
     bioconductor-ebimage \
@@ -102,6 +102,8 @@ RUN R -e "pkgs <- c(                         \
                     'Bchron',                 \
                     'plyr',                   \
                     'pbapply'                 \
+                    Morpho,     \
+                    geomorph, \
                     );                        \
           install.packages(pkgs, repos='https://cran.rstudio.com'); \
           if (!all(pkgs %in% rownames(installed.packages()))) {     \
