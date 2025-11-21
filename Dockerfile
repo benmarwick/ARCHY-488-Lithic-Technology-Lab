@@ -50,6 +50,10 @@ RUN conda clean -y --all || true
 # ----------------------------------------------------------------------
 # Switch back to notebook user for R package installation
 # ----------------------------------------------------------------------
+# Ensure R site-library is writable by the notebook user
+RUN mkdir -p /opt/conda/lib/R/site-library && \
+    chown -R $NB_USER:$NB_USER /opt/conda/lib/R/site-library
+
 USER $NB_USER
 
 COPY cran-packages.txt /tmp/cran-packages.txt
