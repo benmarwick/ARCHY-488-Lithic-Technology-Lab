@@ -58,7 +58,7 @@ RUN mkdir -p /opt/conda/lib/R/site-library \
 # Keeping this is fine as it handles complex GDAL linking
 RUN mamba install -y -c conda-forge \
     r-base=4.4 \
-    r-sf r-terra r-mass r-remotes  \
+    r-sf r-terra r-mass r-remotes  r-openmx r-mbess \
     fftw gdal sqlite r-rcpp r-rcppeigen \
     r-broom r-cowplot r-ggbeeswarm r-ggally r-ggcorrplot r-ggrepel \
     r-ggpmisc r-ggtext r-ggridges r-ggmap r-plotrix r-rcolorbrewer \
@@ -85,14 +85,7 @@ RUN Rscript -e "install.packages('BiocManager'); \
 # Remaining CRAN & GitHub packages (Source installs)
 # -------------------------------------------------------------------
 
-    
-
 RUN Rscript -e "\
-    # 1. Install standard binaries (including OpenMx/MBESS to avoid compiling) \
-    Sys.setenv(OPENMX_NO_SIMD='1'); \
-    Sys.setenv(PKG_CXXFLAGS='-Wno-ignored-attributes'); \
-    install.packages(c('OpenMx', 'MBESS')); \
-    \
     # 2. Install CRAN/Bioc/Universe pkgs via pak (Parallel, Fast) \
     # Note: EBImage, c14bazAAR, and Momocs are now binaries thanks to repos setup \
     pak::pkg_install(c( \
