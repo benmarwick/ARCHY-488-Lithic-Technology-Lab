@@ -71,36 +71,24 @@ RUN mamba install -y -c conda-forge \
 
 
 # -------------------------------------------------------------------
-# CRAN packages (Now using Binaries + Parallel)
-# -------------------------------------------------------------------
-# We grouped BiocManager/LargeList here.
-# 1. We use Ncpus for parallel installs.
-# 2. We use the binary repo set above.
-
-RUN Rscript -e "install.packages('BiocManager'); \
-    BiocManager::install('EBImage', update=FALSE, ask=FALSE, Ncpus=parallel::detectCores())"
-
-
-# -------------------------------------------------------------------
 # Remaining CRAN & GitHub packages (Source installs)
 # -------------------------------------------------------------------
 
+# Install CRAN/Bioc/Universe pkgs via pak (Parallel, Fast) \
 RUN Rscript -e "\
-    # 2. Install CRAN/Bioc/Universe pkgs via pak (Parallel, Fast) \
-    # Note: EBImage, c14bazAAR, and Momocs are now binaries thanks to repos setup \
     pak::pkg_install(c( \
         'EBImage', \
         'tabula', 'tesselle', 'dimensio', 'tidypaleo', 'rcarbon', 'Bchron', 'geomorph', 'Morpho',  \
         'c14bazAAR', 'Momocs' \
-    ), upgrade = FALSE); \
-    \
-    # 3. Install remaining pure GitHub pkgs (Source only) \
-    # We keep the flags env var set at the top of Dockerfile to handle 'apa' dependency builds \
-    pak::pkg_install(c( \
+    ), upgrade = FALSE)"
+    
+# Install remaining pure GitHub pkgs (Source only) \
+RUN Rscript -e "\
+    remotes::install_github(c( \
         'achetverikov/apastats', \
         'dgromer/apa', \
         'benmarwick/polygonoverlap' \
-    ), upgrade = FALSE);"
+    ), upgrade = 'never');"
 
 USER $NB_USER
 
