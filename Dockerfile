@@ -19,7 +19,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     libcurl4-openssl-dev libxml2-dev libgit2-dev libssl-dev \
     libpng-dev libtiff-dev libfftw3-dev \
     libglu1-mesa-dev libxrender-dev libxtst-dev libxt-dev libxext-dev \
-    libxau-dev libxdmcp-dev \
+    libxau-dev libxdmcp-dev libeigen3-dev \
     libmagick++-dev libmagickwand-dev libmagickcore-dev \
     && rm -rf /var/lib/apt/lists/*
 
@@ -87,9 +87,12 @@ RUN Rscript -e "pkgs <- c( \
 # r-universe & GitHub (Use pak for faster dependency resolution)
 # -------------------------------------------------------------------
 # Installing 'pak' first significantly speeds up github installs
-RUN Rscript -e "install.packages('pak', repos = 'https://r-lib.github.io/p/pak/devel/'); \
-    pak::pkg_install('ropensci/c14bazAAR'); \
-    pak::pkg_install(c('achetverikov/apastats', 'dgromer/apa', 'MomX/Momocs', 'benmarwick/polygonoverlap'));"
+RUN Rscript -e "install.packages('pak', repos = repos='https://cloud.r-project.org')" \
+RUN Rscript -e "pak::pkg_install('ropensci/c14bazAAR')"
+RUN Rscript -e "pak::pkg_install('achetverikov/apastats')"
+RUN Rscript -e "pak::pkg_install('dgromer/apa')"
+RUN Rscript -e "pak::pkg_install('MomX/Momocs')"
+RUN Rscript -e "pak::pkg_install('benmarwick/polygonoverlap')"
 
 # -------------------------------------------------------------------
 # Package sanity check
