@@ -51,57 +51,39 @@ RUN mkdir -p /opt/conda/lib/R/site-library \
 # Keeping this is fine as it handles complex GDAL linking
 RUN mamba install -y -c conda-forge \
     r-base=4.4 \
-    r-sf r-terra r-mass r-remotes \
+    r-sf r-terra r-mass r-remotes r-openmx r-mbess \
     fftw gdal sqlite r-rcpp r-rcppeigen \
+    r-broom r-cowplot r-ggbeeswarm r-ggally r-ggcorrplot r-ggrepel \
+    r-ggpmisc r-ggtext r-ggridges r-ggmap r-plotrix r-rcolorbrewer \
+    r-viridis r-see r-gridgraphics r-here r-readxl r-rio \
+    r-factominer r-factoextra r-performance r-fsa r-infer r-psych \
+    r-rnaturalearth r-rnaturalearthdata r-maps r-measurements \
+    r-ade4 r-aqp r-vegan r-rioja r-rmisc r-quarto r-bchron \
+    r-plyr r-pbapply r-morpho r-geomorph \
     && mamba clean -afy
 
 # -------------------------------------------------------------------
 # CRAN packages (Now using Binaries + Parallel)
 # -------------------------------------------------------------------
-# We grouped OpenMx/MBESS/BiocManager/LargeList here.
+# We grouped BiocManager/LargeList here.
 # 1. We use Ncpus for parallel installs.
 # 2. We use the binary repo set above.
-# 3. OpenMx is kept separate if you strictly need the source compilation flags, 
-#    otherwise, allow it to install from binary for speed.
-
-# Install OpenMx from source (as requested for flags) & BiocManager
-RUN Rscript -e "Sys.setenv(OPENMX_NO_SIMD='1'); \
-    Sys.setenv(PKG_CXXFLAGS='-Wno-ignored-attributes'); \
-    install.packages(c('OpenMx','MBESS'), repos='https://packagemanager.posit.co/cran/__linux__/jammy/latest', Ncpus=parallel::detectCores())"
 
 RUN Rscript -e "install.packages('BiocManager'); \
     BiocManager::install('EBImage', update=FALSE, ask=FALSE, Ncpus=parallel::detectCores())"
 
-# The Big List - Now fast because of Binaries
-RUN Rscript -e "pkgs <- c( \
-    'broom','cowplot','ggbeeswarm','GGally','ggcorrplot','ggrepel','ggpmisc','ggtext','ggridges','ggmap', \
-    'plotrix','RColorBrewer','viridis','see','gridGraphics','here','readxl','rio','tabula','tesselle', \
-    'dimensio','FactoMineR','factoextra','performance','FSA','infer','psych','rnaturalearth', \
-    'rnaturalearthdata','maps','measurements','ade4','aqp','tidypaleo','vegan','rioja','Rmisc','rcarbon', \
-    'quarto','Bchron','plyr','pbapply','Morpho','geomorph'); \
-    install.packages(pkgs, Ncpus=parallel::detectCores()); \
-    missing <- pkgs[!pkgs %in% rownames(installed.packages())]; \
-    if (length(missing)) stop('Failed to install: ', paste(missing, collapse=', '));"
-
 
 # -------------------------------------------------------------------
-# r-universe & GitHub (Use pak for faster dependency resolution)
+# Remaining CRAN & GitHub packages (Source installs)
 # -------------------------------------------------------------------
-# We set OpenMx flags here because 'dgromer/apa' pulls in 'OpenMx', 
-# and if pak decides to rebuild it, it needs these flags to succeed.
-RUN Rscript -e "install.packages('pak', repos='https://cloud.r-project.org'); \
+RUN Rscript -e "install.packages('pak' , repos='https://cloud.r-project.org'); \
     Sys.setenv(OPENMX_NO_SIMD='1'); \
     Sys.setenv(PKG_CXXFLAGS='-Wno-ignored-attributes'); \
-    pak::pkg_install('ropensci/c14bazAAR'); \
-    pak::pkg_install(c('achetverikov/apastats', 'dgromer/apa', 'MomX/Momocs', 'benmarwick/polygonoverlap'));"
+    # Install the few CRAN packages not on Conda
+    pak::pkg_install(c('tabula', 'tesselle', 'dimensio', 'tidypaleo', 'rcarbon')); \
+    # Install GitHub packages
+    pak::pkg_install(c('ropensci/c14bazAAR', 'achetverikov/apastats', 'dgromer/apa', 'MomX/Momocs', 'benmarwick/polygonoverlap'));"    
 
-# -------------------------------------------------------------------
-# Package sanity check
-# -------------------------------------------------------------------
-RUN R -e "required_pkgs <- c('Momocs','polygonoverlap','sf','terra','MASS','Morpho','EBImage'); \
-          installed <- sapply(required_pkgs, require, quietly=TRUE, character.only=TRUE); \
-          if (!all(installed)) { missing <- required_pkgs[!installed]; warning('Some packages failed: ', paste(missing, collapse=', ')); } \
-          else message('All key packages installed and loadable')"
 
 USER $NB_USER
 
