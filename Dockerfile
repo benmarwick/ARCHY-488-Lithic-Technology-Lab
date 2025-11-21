@@ -51,6 +51,7 @@ RUN mamba install -y -c conda-forge \
     r-rvcg \
     r-sf \
     r-terra \
+    r-mass \
     && mamba clean -afy
 
 # -------------------------------------------------------------------
