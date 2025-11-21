@@ -6,46 +6,27 @@ RUN echo "PROJ_LIB=/opt/conda/share/proj" >> /opt/conda/lib/R/etc/Renviron.site
 
 # Switch to root to install system dependencies ---
 USER root
+RUN mamba install -y -c conda-forge \
+    fftw \
+    libtiff \
+    libxml2 \
+    curl \
+    openssl \
+    mesa-libgl-cos7-x86_64 \
+    xorg-libxtst \
+    xorg-libxrender \
+    xorg-libxext \
+    xorg-libxau \
+    xorg-libxdmcp \
+    compilers \
+    glib \
+    && mamba clean -afy
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    libudunits2-dev \
-    libgl1-mesa-glx \
-    libglu1-mesa-dev \
-    libcurl4-gnutls-dev \
-    libssl-dev \
-    libxml2-dev \
-    libfftw3-dev \
-    libtiff-dev \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install Difficult/Heavy Packages via Conda ---
-# We install these binaries to prevent Out-Of-Memory compilation errors
-# and system library conflicts.
-RUN conda install -y -c conda-forge \
-    r-mass \
-    r-devtools \
-    r-remotes \
-    r-curl \
-    r-openssl \
-    r-xml2 \
-    r-sf \
-    r-terra \
-    r-spatstat \
-    r-raster \
-    r-udunits2 \
-    r-igraph \
-    r-imager \
-    r-rgl \
-    r-rcpp \
-    r-rcpparmadillo \
-    r-rcppeigen \
-    gdal \
-    geos \
-    proj \
-    udunits2 \
-    && conda clean -afy
+RUN mamba install -y -c conda-forge \
+    r-rvcg \
+    r-morpho \
+    r-geomorph \
+    && mamba clean -afy
 
 # Switch back to notebook user
 USER $NB_USER
@@ -57,9 +38,8 @@ RUN R -e "install.packages('Morpho', Ncpus=1, repos='https://cran.rstudio.com')"
 RUN R -e "install.packages('geomorph', Ncpus=1, repos='https://cran.rstudio.com')"
 
 # Install Bioconductor Packages 
-# EBImage is not on CRAN, so we use BiocManager
-RUN R -e "install.packages('BiocManager', repos='https://cran.rstudio.com'); \
-          BiocManager::install('EBImage', update=FALSE, ask=FALSE)"
+RUN mamba install -y -c bioconda bioconductor-ebimage
+
 
 # Install CRAN packages
 RUN R -e "pkgs <- c(                         \
