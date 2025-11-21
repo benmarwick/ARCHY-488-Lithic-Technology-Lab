@@ -74,7 +74,6 @@ RUN R -e "pkgs <- c(                         \
                     'tidypaleo',              \
                     'vegan',                  \
                     'rioja',                  \
-                    'ggtern',                 \
                     # misc                   \
                     'Rmisc',                  \
                     'rcarbon',                \
