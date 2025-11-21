@@ -37,55 +37,105 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     libmagickcore-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Make gcc/g++ default
+# Make GCC/G++ version 10 default (fixed syntax)
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 \
- && update-alternatives --install /
-RUN --mount=type=cache,target=/opt/conda/lib/R/site-library \
-    R -e "options(repos='https://cloud.r-project.org'); \
-          if (!requireNamespace('BiocManager', quietly=TRUE)) \
-              install.packages('BiocManager'); \
-          BiocManager::install('EBImage', ask=FALSE, update=FALSE)"
+ && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 100 \
+ && update-alternatives --set gcc /usr/bin/gcc-10 \
+ && update-alternatives --set g++ /usr/bin/g++-10
 
-# ----------------------------------------------------------------------
-# CRAN package list install
-# ----------------------------------------------------------------------
-RUN --mount=type=cache,target=/opt/conda/lib/R/site-library \
-    R -e "pkgs <- scan('/tmp/cran-packages.txt', what=character()); \
-          install.packages(pkgs, repos='https://cloud.r-project.org', Ncpus=1); \
-          missing <- pkgs[!pkgs %in% rownames(installed.packages())]; \
-          if (length(missing)) stop('Missing CRAN pkgs: ', paste(missing, collapse=', '))"
+# CPU flags for Eigen/OpenMx compilation
+RUN echo "CXXFLAGS += -O3 -march=core2 -msse2" >> /opt/conda/lib/R/etc/Makeconf
 
-# ----------------------------------------------------------------------
-# r-universe installs
-# ----------------------------------------------------------------------
-RUN --mount=type=cache,target=/opt/conda/lib/R/site-library \
-    R -e \"pkgs <- scan('/tmp/runiverse-packages.txt', what=character()); \
-          for (p in pkgs) install.packages( \
-              p, \
-              repos=c(ropensci='https://ropensci.r-universe.dev', \
-                      CRAN='https://cloud.r-project.org') \
-          )\"
+# -------------------------------------------------------------------
+# Ensure site-library exists and assign to current user safely
+# -------------------------------------------------------------------
+RUN mkdir -p /opt/conda/lib/R/site-library \
+    && chown -R $(id -u):$(id -g) /opt/conda/lib/R/site-library
 
-# ----------------------------------------------------------------------
-# GitHub installs
-# ----------------------------------------------------------------------
-RUN --mount=type=cache,target=/opt/conda/lib/R/site-library \
-    R -e \"gh <- scan('/tmp/github-packages.txt', what=character()); \
-          for (r in gh) { message('installing ', r); \
-              remotes::install_github(r, upgrade='never') } \"
+# -------------------------------------------------------------------
+# MAMBA: install conda packages
+# -------------------------------------------------------------------
+RUN mamba install -y -c conda-forge \
+    r-base=4.4 \
+    r-rvcg \
+    r-sf \
+    r-terra \
+    r-mass \
+    r-remotes \
+    fftw \
+    gdal \
+    r-rcpp \
+    r-rcppeigen \
+    && mamba clean -afy
 
-# ----------------------------------------------------------------------
-# Final load test (non-fatal)
-# ----------------------------------------------------------------------
-RUN --mount=type=cache,target=/opt/conda/lib/R/site-library \
-    R -e \"required <- c('Momocs','polygonoverlap','sf','terra','MASS','Morpho','EBImage'); \
-          ok <- sapply(required, require, quietly=TRUE, character.only=TRUE); \
-          if (!all(ok)) warning('Missing: ', paste(required[!ok], collapse=', ')) else \
-              message('All required packages load correctly.')\"
+# -------------------------------------------------------------------
+# Install OpenMx + MBESS system-wide
+# -------------------------------------------------------------------
+RUN Rscript -e "options(repos='https://cloud.r-project.org'); \
+    Sys.setenv(OPENMX_NO_SIMD='1'); \
+    Sys.setenv(PKG_CXXFLAGS='-Wno-ignored-attributes'); \
+    install.packages(c('OpenMx','MBESS'), type='source')"
 
+# -------------------------------------------------------------------
+# Switch back to notebook user
+# -------------------------------------------------------------------
+USER $NB_USER
+
+# -------------------------------------------------------------------
+# Bioconductor EBImage
+# -------------------------------------------------------------------
+RUN R -e "install.packages('BiocManager', repos='https://cloud.r-project.org'); \
+          BiocManager::install('EBImage', update=FALSE, ask=FALSE)"
+
+# -------------------------------------------------------------------
+# CRAN packages
+# -------------------------------------------------------------------
+RUN R -e "pkgs <- c( \
+    'broom','cowplot','ggbeeswarm','GGally','ggcorrplot','ggrepel','ggpmisc','ggtext','ggridges','ggmap', \
+    'plotrix','RColorBrewer','viridis','see','gridGraphics','here','readxl','rio','tabula','tesselle', \
+    'dimensio','FactoMineR','factoextra','performance','FSA','infer','psych','rnaturalearth', \
+    'rnaturalearthdata','maps','measurements','ade4','aqp','tidypaleo','vegan','rioja','Rmisc','rcarbon', \
+    'quarto','Bchron','plyr','pbapply','Morpho','geomorph'); \
+    install.packages(pkgs, repos='https://cloud.r-project.org'); \
+    missing <- pkgs[!pkgs %in% rownames(installed.packages())]; \
+    if (length(missing)) stop('Failed to install: ', paste(missing, collapse=', '));"
+
+# -------------------------------------------------------------------
+# r-universe
+# -------------------------------------------------------------------
+RUN R -e "install.packages('c14bazAAR', repos=c(ropensci='https://ropensci.r-universe.dev', CRAN='https://cloud.r-project.org'))"
+
+# -------------------------------------------------------------------
+# GitHub packages
+# -------------------------------------------------------------------
+RUN R -e "remotes::install_github('achetverikov/apastats')" && \
+    R -e "if (!require('apastats', quietly=TRUE)) stop('Failed to install apastats')"
+
+RUN R -e "remotes::install_github('dgromer/apa')" && \
+    R -e "if (!require('apa', quietly=TRUE)) stop('Failed to install apa')"
+
+RUN R -e "remotes::install_github('MomX/Momocs')" && \
+    R -e "if (!require('Momocs', quietly=TRUE)) stop('Failed to install Momocs')"
+
+RUN R -e "remotes::install_github('benmarwick/polygonoverlap')" && \
+    R -e "if (!require('polygonoverlap', quietly=TRUE)) stop('Failed to install polygonoverlap')"
+
+# -------------------------------------------------------------------
+# Package sanity check
+# -------------------------------------------------------------------
+RUN R -e "required_pkgs <- c('Momocs','polygonoverlap','sf','terra','MASS','Morpho','EBImage'); \
+          installed <- sapply(required_pkgs, require, quietly=TRUE, character.only=TRUE); \
+          if (!all(installed)) { missing <- required_pkgs[!installed]; warning('Some packages failed: ', paste(missing, collapse=', ')); } \
+          else message('All key packages installed and loadable')"
+
+# -------------------------------------------------------------------
 # Metadata
+# -------------------------------------------------------------------
 LABEL maintainer="Ben Marwick <bmarwick@uw.edu>" \
       org.opencontainers.image.description="Dockerfile for ARCHY 488 Lithic Technology Lab" \
-      org.opencontainers.image.licenses="Apache-2.0"
-
-USER $NB_USER
+      org.opencontainers.image.created="2022-10" \
+      org.opencontainers.image.authors="Ben Marwick" \
+      org.opencontainers.image.url="https://github.com/benmarwick/ARCHY-488-Lithic-Technology-Lab/blob/master/Dockerfile" \
+      org.opencontainers.image.documentation="https://github.com/benmarwick/ARCHY-488-Lithic-Technology-Lab/" \
+      org.opencontainers.image.licenses="Apache-2.0" \
+      org.label-schema.description="Reproducible workflow image (license: Apache 2.0)"
