@@ -4,81 +4,112 @@ FROM us-west1-docker.pkg.dev/uwit-mci-axdd/rttl-images/jupyter-rstudio-notebook:
 # deal with an issue UW REF0917537
 RUN echo "PROJ_LIB=/opt/conda/share/proj" >> /opt/conda/lib/R/etc/Renviron.site
 
+# Install system dependencies for spatial packages
+RUN apt-get update && apt-get install -y \
+    libgdal-dev \
+    libgeos-dev \
+    libproj-dev \
+    libudunits2-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# install some R packages useful for lithic analysis
-RUN R -e "install.packages(c(                    \
-                             # data manipulation \
-                             'MASS',             \
-                             'broom',            \
-                             # plotting          \
-                             'cowplot',          \
-                             'ggbeeswarm',       \
-                             'GGally',           \
-                             'ggcorrplot',       \
-                             'ggrepel',          \
-                             'ggpmisc',          \
-                             'ggtext',           \
-                             'ggridges',         \
-                             'ggmap',            \
-                             'plotrix',          \
-                             'RColorBrewer',     \
-                             'viridis',          \
-                             'see',              \
-                             'gridGraphics',     \
-                             # file handling     \
-                             'here',             \
-                             'readxl',           \
-                             'rio',              \
-                             # shape             \
-                             'geomorph',         \
-                             'Morpho',           \
-                             # images            \
-                             'EBImage',          \
-                             'imager',           \
-                             # stats             \
-                             'tabula',           \
-                             'tesselle',         \
-                             'dimensio',         \
-                             'FactoMineR',       \
-                             'factoextra',       \
-                             'performance',      \
-                             'FSA',              \
-                             'infer',            \
-                             'psych',            \
-                             # mapping and GIS   \
-                             'rnaturalearth',    \
-                             'rnaturalearthdata',\
-                             'sf',               \
-                             'rgeos',            \
-                             'maps',             \
-                             'raster',           \
-                             'terra',            \
-                             'spatstat',         \
-                             'measurements',     \
-                             # palaeoecology     \
-                             'ade4',              \
-                             'aqp',              \
-                             'tidypaleo',        \
-                             'vegan',            \
-                             'rioja',            \
-                             'ggtern',           \
-                             # misc              \
-                             'Rmisc',            \
-                             'rcarbon',          \
-                             'quarto',           \
-                             'Bchron',           \
-                             'plyr',             \
-                             'pbapply',          \
-                             'remotes'                   \
-                              ), repos='https://cran.rstudio.com'); \
-                              # r-universe installations            \
-                              install.packages('c14bazAAR',         \
-                              repos = c(ropensci = 'https://ropensci.r-universe.dev')); \
-                              # Github installations                                    \
-                              devtools::install_github('achetverikov/apastats');        \
-                              devtools::install_github('dgromer/apa');                  \
-                              devtools::install_github('benmarwick/polygonoverlap');    \
-                              devtools::install_github('MomX/Momocs')"
+# Install devtools and remotes first
+RUN R -e "install.packages(c('devtools', 'remotes'), repos='https://cran.rstudio.com')"
+
+# Install CRAN packages with error checking
+RUN R -e "pkgs <- c(                         \
+                    # data manipulation      \
+                    'MASS',                   \
+                    'broom',                  \
+                    # plotting               \
+                    'cowplot',                \
+                    'ggbeeswarm',             \
+                    'GGally',                 \
+                    'ggcorrplot',             \
+                    'ggrepel',                \
+                    'ggpmisc',                \
+                    'ggtext',                 \
+                    'ggridges',               \
+                    'ggmap',                  \
+                    'plotrix',                \
+                    'RColorBrewer',           \
+                    'viridis',                \
+                    'see',                    \
+                    'gridGraphics',           \
+                    # file handling          \
+                    'here',                   \
+                    'readxl',                 \
+                    'rio',                    \
+                    # shape                  \
+                    'geomorph',               \
+                    'Morpho',                 \
+                    # images                 \
+                    'EBImage',                \
+                    'imager',                 \
+                    # stats                  \
+                    'tabula',                 \
+                    'tesselle',               \
+                    'dimensio',               \
+                    'FactoMineR',             \
+                    'factoextra',             \
+                    'performance',            \
+                    'FSA',                    \
+                    'infer',                  \
+                    'psych',                  \
+                    # mapping and GIS        \
+                    'rnaturalearth',          \
+                    'rnaturalearthdata',      \
+                    'sf',                     \
+                    'maps',                   \
+                    'raster',                 \
+                    'terra',                  \
+                    'spatstat',               \
+                    'measurements',           \
+                    # palaeoecology          \
+                    'ade4',                   \
+                    'aqp',                    \
+                    'tidypaleo',              \
+                    'vegan',                  \
+                    'rioja',                  \
+                    'ggtern',                 \
+                    # misc                   \
+                    'Rmisc',                  \
+                    'rcarbon',                \
+                    'quarto',                 \
+                    'Bchron',                 \
+                    'plyr',                   \
+                    'pbapply'                 \
+                    );                        \
+          install.packages(pkgs, repos='https://cran.rstudio.com'); \
+          if (!all(pkgs %in% rownames(installed.packages()))) {     \
+            missing <- pkgs[!pkgs %in% rownames(installed.packages())]; \
+            stop('Failed to install: ', paste(missing, collapse=', ')); \
+          }"
+
+# Install r-universe packages
+RUN R -e "install.packages('c14bazAAR', repos = c(ropensci = 'https://ropensci.r-universe.dev', CRAN = 'https://cran.rstudio.com'))"
+
+# Install GitHub packages individually with error checking
+RUN R -e "remotes::install_github('achetverikov/apastats')" && \
+    R -e "if (!require('apastats', quietly=TRUE)) stop('Failed to install apastats')"
+
+RUN R -e "remotes::install_github('dgromer/apa')" && \
+    R -e "if (!require('apa', quietly=TRUE)) stop('Failed to install apa')"
+
+RUN R -e "remotes::install_github('MomX/Momocs')" && \
+    R -e "if (!require('Momocs', quietly=TRUE)) stop('Failed to install Momocs')"
+
+    RUN R -e "remotes::install_github('benmarwick/polygonoverlap)" && \
+    R -e "if (!require('polygonoverlap', quietly=TRUE)) stop('Failed to install polygonoverlap')"
+
+# Verify key packages are installed
+RUN R -e "required_pkgs <- c('Momocs', 'polygonoverlap', 'sf', 'terra'); \
+          installed <- sapply(required_pkgs, require, quietly=TRUE, character.only=TRUE); \
+          if (!all(installed)) {                                             \
+            missing <- required_pkgs[!installed];                            \
+            warning('Some packages failed to load: ', paste(missing, collapse=', ')); \
+          } else {                                                           \
+            message('All key packages successfully installed and loadable'); \
+          }"
 
 # --- Metadata ---
 LABEL maintainer = "Ben Marwick <bmarwick@uw.edu>"  \
