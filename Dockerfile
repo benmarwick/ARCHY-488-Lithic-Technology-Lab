@@ -34,6 +34,9 @@ RUN apt-get update && apt-get install -y \
     libxext-dev \
     libxau-dev \
     libxdmcp-dev \
+    libmagick++-dev \
+    libmagickwand-dev \
+    libmagickcore-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Ensure GCC/G++/Fortran visible as default compilers
@@ -55,7 +58,7 @@ RUN mamba install -y -c conda-forge \
 # -------------------------------------------------------------------
 USER $NB_USER
 
-RUN R -e 'if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager"); BiocManager::install("EBImage")'
+RUN R --no-save --no-restore -e "if (!requireNamespace('BiocManager', quietly = TRUE)) install.packages('BiocManager'); BiocManager::install('EBImage')"
 
 # -------------------------------------------------------------------
 # INSTALL CRAN PACKAGES (safe ones; compiled ones now succeed)
