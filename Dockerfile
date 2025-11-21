@@ -5,6 +5,8 @@ FROM us-west1-docker.pkg.dev/uwit-mci-axdd/rttl-images/jupyter-rstudio-notebook:
 
 # Fix PROJ issue (UW REF0917537)
 RUN echo "PROJ_LIB=/opt/conda/share/proj" >> /opt/conda/lib/R/etc/Renviron.site
+
+# Update R to 4.4 from conda-forge
 RUN mamba install -y -c conda-forge r-base=4.4
 RUN echo "r-base 4.4.*" >> /opt/conda/conda-meta/pinned
 
@@ -13,9 +15,9 @@ RUN echo "r-base 4.4.*" >> /opt/conda/conda-meta/pinned
 # -------------------------------------------------------------------
 USER root
 
-# Install compilers + system libs required for OpenMx, MBESS, apa, EBImage, sf, terra, Momocs, etc.
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     build-essential \
+    gcc-10 g++-10 \
     gfortran \
     liblapack-dev \
     libblas-dev \
@@ -39,13 +41,19 @@ RUN apt-get update && apt-get install -y \
     libmagickcore-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Ensure GCC/G++/Fortran visible as default compilers
+# GCC/G++ version pinning
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 && \
+    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 100
+
+# ENV vars for clean compilation
 ENV CC=gcc
-ENV CXX=g++ 
+ENV CXX=g++
 ENV FC=gfortran
+ENV PKG_CXXFLAGS="-Wno-ignored-attributes"
+ENV OPENMX_NO_SIMD=1
 
 # -------------------------------------------------------------------
-# MAMBA: install packages available from conda-forge
+# Mamba: install conda-supported R packages
 # -------------------------------------------------------------------
 RUN mamba install -y -c conda-forge \
     r-rvcg \
@@ -58,8 +66,79 @@ RUN mamba install -y -c conda-forge \
     && mamba clean -afy
 
 # -------------------------------------------------------------------
+# Install OpenMx + MBESS system-wide (critical)
+# -------------------------------------------------------------------
+RUN R -e "options(repos='https://cloud.r-project.org'); \
+    Sys.setenv(OPENMX_NO_SIMD='1'); \
+    Sys.setenv(PKG_CXXFLAGS='-Wno-ignored-attributes'); \
+    install.packages(c('OpenMx','MBESS'), type='source')"
+
+# -------------------------------------------------------------------
 # Switch back to non-root user
 # -------------------------------------------------------------------
+USER $NB_USER
+
+# -------------------------------------------------------------------
+# Install Bioconductor EBImage
+# -------------------------------------------------------------------
+RUN R -e "install.packages('BiocManager', repos='https://cloud.r-project.org'); \
+    BiocManager::install('EBImage', update=FALSE, ask=FALSE)"
+
+# -------------------------------------------------------------------
+# Install large list of CRAN packages
+# -------------------------------------------------------------------
+RUN R -e "pkgs <- c( \
+    'broom','cowplot','ggbeeswarm','GGally','ggcorrplot','ggrepel','ggpmisc','ggtext','ggridges','ggmap', \
+    'plotrix','RColorBrewer','viridis','see','gridGraphics','here','readxl','rio','tabula','tesselle', \
+    'dimensio','FactoMineR','factoextra','performance','FSA','infer','psych','rnaturalearth', \
+    'rnaturalearthdata','maps','measurements','ade4','aqp','tidypaleo','vegan','rioja','Rmisc','rcarbon', \
+    'quarto','Bchron','plyr','pbapply','Morpho','geomorph' \
+    ); \
+    install.packages(pkgs, repos='https://cloud.r-project.org'); \
+    missing <- pkgs[!pkgs %in% rownames(installed.packages())]; \
+    if (length(missing)) stop('Failed to install: ', paste(missing, collapse=', ')); \
+    message('CRAN packages installed OK')"
+
+# -------------------------------------------------------------------
+# r-universe packages
+# -------------------------------------------------------------------
+RUN R -e "install.packages('c14bazAAR', \
+    repos=c(ropensci='https://ropensci.r-universe.dev', CRAN='https://cloud.r-project.org'))"
+
+# -------------------------------------------------------------------
+# GitHub packages
+# -------------------------------------------------------------------
+RUN R -e "remotes::install_github('achetverikov/apastats')" && \
+    R -e "if (!require('apastats', quietly=TRUE)) stop('Failed to install apastats')"
+
+RUN R -e "remotes::install_github('dgromer/apa')" && \
+    R -e "if (!require('apa', quietly=TRUE)) stop('Failed to install apa')"
+
+RUN R -e "remotes::install_github('MomX/Momocs')" && \
+    R -e "if (!require('Momocs', quietly=TRUE)) stop('Failed to install Momocs')"
+
+RUN R -e "remotes::install_github('benmarwick/polygonoverlap')" && \
+    R -e "if (!require('polygonoverlap', quietly=TRUE)) stop('Failed to install polygonoverlap')"
+
+# -------------------------------------------------------------------
+# Package sanity check
+# -------------------------------------------------------------------
+RUN R -e "required_pkgs <- c('Momocs','polygonoverlap','sf','terra','MASS','Morpho','EBImage'); \
+    installed <- sapply(required_pkgs, require, quietly=TRUE, character.only=TRUE); \
+    if (!all(installed)) { missing <- required_pkgs[!installed]; warning('Some packages failed: ', paste(missing, collapse=', ')); } \
+    else message('All key packages installed and loadable')"
+
+# -------------------------------------------------------------------
+# Metadata
+# -------------------------------------------------------------------
+LABEL maintainer="Ben Marwick <bmarwick@uw.edu>" \
+      org.opencontainers.image.description="Dockerfile for ARCHY 488 Lithic Technology Lab" \
+      org.opencontainers.image.created="2022-10" \
+      org.opencontainers.image.authors="Ben Marwick" \
+      org.opencontainers.image.url="https://github.com/benmarwick/ARCHY-488-Lithic-Technology-Lab/blob/master/Dockerfile" \
+      org.opencontainers.image.documentation="https://github.com/benmarwick/ARCHY-488-Lithic-Technology-Lab/" \
+      org.opencontainers.image.licenses="Apache-2.0" \
+      org.label-schema.description="Reproducible workflow image (license: Apache 2.0)"
 USER $NB_USER
 
 RUN R -e "install.packages('BiocManager', repos='https://cran.rstudio.com'); \
