@@ -105,8 +105,7 @@ RUN Rscript -e " \
     # Remove duplicates from conda library (keeping site-library versions)
     if(length(duplicates) > 0) {     \
         unlink(file.path(conda_lib, duplicates), recursive = TRUE)   \
-        message('Removed duplicates: ', paste(duplicates, collapse = ', '))  \
-    }"
+        message('Removed duplicates: ', paste(duplicates, collapse = ', ')) }"
 
 USER $NB_USER
 
