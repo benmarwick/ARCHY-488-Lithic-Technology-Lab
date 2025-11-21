@@ -1,72 +1,45 @@
-# syntax=docker/dockerfile:1.4
+# -------------------------------------------------------------------
+# Base image
+# -------------------------------------------------------------------
 FROM us-west1-docker.pkg.dev/uwit-mci-axdd/rttl-images/jupyter-rstudio-notebook:2.6.1-B
 
-# Fix PROJ issue for sf / terra
+# Fix PROJ issue
 RUN echo "PROJ_LIB=/opt/conda/share/proj" >> /opt/conda/lib/R/etc/Renviron.site
 
+# -------------------------------------------------------------------
+# SYSTEM LIBRARIES + COMPILERS
+# -------------------------------------------------------------------
 USER root
 
-# ----------------------------------------------------------------------
-# System dependencies needed for common R packages (cached apt)
-# ----------------------------------------------------------------------
-RUN --mount=type=cache,target=/var/cache/apt \
-    --mount=type=cache,target=/var/lib/apt \
-    apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-      build-essential \
-      gfortran \
-      gcc g++ \
-      liblapack-dev libblas-dev libopenblas-dev \
-      libcurl4-openssl-dev libxml2-dev libgit2-dev libssl-dev \
-      libpng-dev libtiff-dev \
-      libfftw3-dev \
-      libglu1-mesa-dev libxrender-dev libxtst-dev libxt-dev \
-      libxext-dev libxau-dev libxdmcp-dev \
-      libmagickcore-dev libmagickwand-dev \
-      libgeos-dev libproj-dev libsqlite3-dev \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc-10 g++-10 \
+    gfortran \
+    liblapack-dev \
+    libblas-dev \
+    libopenblas-dev \
+    libcurl4-openssl-dev \
+    libxml2-dev \
+    libgit2-dev \
+    libssl-dev \
+    libpng-dev \
+    libtiff-dev \
+    libfftw3-dev \
+    libglu1-mesa-dev \
+    libxrender-dev \
+    libxtst-dev \
+    libxt-dev \
+    libxext-dev \
+    libxau-dev \
+    libxdmcp-dev \
+    libmagick++-dev \
+    libmagickwand-dev \
+    libmagickcore-dev \
     && rm -rf /var/lib/apt/lists/*
 
-ENV CC=gcc
-ENV CXX=g++
-ENV FC=gfortran
-
-# ----------------------------------------------------------------------
-# Conda/mamba installs for heavy compiled packages
-# ----------------------------------------------------------------------
-RUN mamba --version >/dev/null 2>&1 || conda install -y -c conda-forge mamba
-
-RUN mamba install -y -c conda-forge \
-      r-sf \
-      r-terra \
-      r-rcpp r-rcppeigen \
-      r-rvcg \
-      r-mass \
-      r-remotes \
-      gdal geos proj fftw \
-    && mamba clean -afy
-
-RUN conda clean -y --all || true
-
-# ----------------------------------------------------------------------
-# Switch back to notebook user for R package installation
-# ----------------------------------------------------------------------
-# Ensure R site-library is writable by the notebook user
-RUN mkdir -p /opt/conda/lib/R/site-library && \
-    chown -R $NB_USER:$NB_USER /opt/conda/lib/R/site-library
-
-USER $NB_USER
-
-COPY cran-packages.txt /tmp/cran-packages.txt
-COPY github-packages.txt /tmp/github-packages.txt
-COPY runiverse-packages.txt /tmp/runiverse-packages.txt
-
-# NOTE:
-# /opt/conda/lib/R/library      = base R (DO NOT CACHE)
-# /opt/conda/lib/R/site-library = user-installed packages (SAFE TO CACHE)
-
-# ----------------------------------------------------------------------
-# Bioconductor (EBImage)
-# ----------------------------------------------------------------------
+# Make gcc/g++ default
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 \
+ && update-alternatives --install /
 RUN --mount=type=cache,target=/opt/conda/lib/R/site-library \
     R -e "options(repos='https://cloud.r-project.org'); \
           if (!requireNamespace('BiocManager', quietly=TRUE)) \
