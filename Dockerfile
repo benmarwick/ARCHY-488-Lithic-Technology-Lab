@@ -59,7 +59,7 @@ RUN mamba install -y -c conda-forge \
     r-factominer r-factoextra r-performance r-fsa r-infer r-psych \
     r-rnaturalearth r-rnaturalearthdata r-maps r-measurements \
     r-ade4 r-aqp r-vegan r-rioja r-rmisc r-quarto \
-    r-plyr r-pbapply r-pak \
+    r-plyr r-pbapply r-curl r-pak \
     && mamba clean -afy
 
 
