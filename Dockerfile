@@ -5,13 +5,30 @@ FROM us-west1-docker.pkg.dev/uwit-mci-axdd/rttl-images/jupyter-rstudio-notebook:
 RUN echo "PROJ_LIB=/opt/conda/share/proj" >> /opt/conda/lib/R/etc/Renviron.site
 
 # Install system dependencies for spatial packages
+# Switch to root to install system dependencies ---
 USER root
+
+# Install system dependencies
+# Added libgl1-mesa-glx (often needed for spatial plotting)
 RUN apt-get update && apt-get install -y \
-    libgdal-dev \
-    libgeos-dev \
-    libproj-dev \
     libudunits2-dev \
+    libgl1-mesa-glx \
+    build-essential \
     && rm -rf /var/lib/apt/lists/*
+
+# Installing terra/sf from source fails due to GLIBC mismatch. 
+# We install binaries from conda-forge instead.
+RUN conda install -y -c conda-forge \
+    r-sf \
+    r-terra \
+    r-spatstat \
+    r-raster \
+    r-udunits2 \
+    gdal \
+    geos \
+    proj \
+    udunits2 \
+    && conda clean -afy
 
 # Switch back to notebook user if needed
 USER $NB_USER
@@ -61,12 +78,8 @@ RUN R -e "pkgs <- c(                         \
                     'psych',                  \
                     # mapping and GIS        \
                     'rnaturalearth',          \
-                    'rnaturalearthdata',      \
-                    'sf',                     \
+                    'rnaturalearthdata',      \   
                     'maps',                   \
-                    'raster',                 \
-                    'terra',                  \
-                    'spatstat',               \
                     'measurements',           \
                     # palaeoecology          \
                     'ade4',                   \
