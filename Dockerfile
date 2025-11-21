@@ -51,7 +51,7 @@ RUN mkdir -p /opt/conda/lib/R/site-library \
 # Keeping this is fine as it handles complex GDAL linking
 RUN mamba install -y -c conda-forge \
     r-base=4.4 \
-    r-sf r-terra r-mass r-remotes r-openmx r-mbess \
+    r-sf r-terra r-mass r-remotes  \
     fftw gdal sqlite r-rcpp r-rcppeigen \
     r-broom r-cowplot r-ggbeeswarm r-ggally r-ggcorrplot r-ggrepel \
     r-ggpmisc r-ggtext r-ggridges r-ggmap r-plotrix r-rcolorbrewer \
@@ -79,10 +79,16 @@ RUN Rscript -e "install.packages('BiocManager'); \
 # -------------------------------------------------------------------
 RUN Rscript -e "Sys.setenv(OPENMX_NO_SIMD='1'); \
     Sys.setenv(PKG_CXXFLAGS='-Wno-ignored-attributes'); \
+    # Install OpenMx and MBESS as binaries via standard R first
+    install.packages(c('OpenMx', 'MBESS'))"
+    
+RUN Rscript -e "Sys.setenv(OPENMX_NO_SIMD='1'); \
+    Sys.setenv(PKG_CXXFLAGS='-Wno-ignored-attributes'); \
     # Install the few CRAN packages not on Conda
-    pak::pkg_install(c('tabula', 'tesselle', 'dimensio', 'tidypaleo', 'rcarbon', 'Bchron', 'geomorph', 'Morpho'), upgrade = FALSE); \
-    # Install GitHub packages
-    pak::pkg_install(c('ropensci/c14bazAAR', 'achetverikov/apastats', 'dgromer/apa', 'MomX/Momocs', 'benmarwick/polygonoverlap'), upgrade = FALSE);"    
+    pak::pkg_install(c('tabula', 'tesselle', 'dimensio', 'tidypaleo', 'rcarbon', 'Bchron', 'geomorph', 'Morpho'), upgrade = FALSE)" 
+    
+# Install GitHub packages
+RUN Rscript -e "pak::pkg_install(c('ropensci/c14bazAAR', 'achetverikov/apastats', 'dgromer/apa', 'MomX/Momocs', 'benmarwick/polygonoverlap'), upgrade = FALSE);"    
 
 
 USER $NB_USER
