@@ -48,13 +48,14 @@ RUN mamba install -y -c conda-forge \
     r-rvcg \
     r-sf \
     r-terra \
-    bioconductor-ebimage \
     && mamba clean -afy
 
 # -------------------------------------------------------------------
 # Switch back to non-root user
 # -------------------------------------------------------------------
 USER $NB_USER
+
+RUN R -e 'if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager"); BiocManager::install("EBImage")'
 
 # -------------------------------------------------------------------
 # INSTALL CRAN PACKAGES (safe ones; compiled ones now succeed)
@@ -117,7 +118,7 @@ RUN R -e "pkgs <- c(                         \
 RUN R -e "install.packages('c14bazAAR', repos = c(ropensci = 'https://ropensci.r-universe.dev', CRAN = 'https://cran.rstudio.com'))"
 
 # -------------------------------------------------------------------
-# GitHub packages (these now compile properly)
+# GitHub packages 
 # -------------------------------------------------------------------
 RUN R -e "remotes::install_github('achetverikov/apastats')" && \
     R -e "if (!require('apastats', quietly=TRUE)) stop('Failed to install apastats')"
