@@ -81,6 +81,13 @@ RUN Rscript -e "\
         'tabula', 'tesselle', 'dimensio', 'tidypaleo', 'rcarbon', 'Bchron', 'geomorph', 'Morpho',  \
         'c14bazAAR', 'Momocs' \
     ), upgrade = FALSE)"
+
+
+# -------------------------------------------------------------------
+# Fix GEOS version mismatch by reinstalling sf with correct libraries
+# -------------------------------------------------------------------
+RUN Rscript -e "remove.packages('sf'); \
+    install.packages('sf', configure.args='--with-proj-lib=/opt/conda/lib --with-gdal-config=/opt/conda/bin/gdal-config --with-geos-config=/opt/conda/bin/geos-config')"
     
 # Install remaining pure GitHub pkgs (Source only) \
 RUN Rscript -e "\
@@ -91,22 +98,18 @@ RUN Rscript -e "\
     ), upgrade = 'never');"
 
 # After all installations, remove any conda-installed R packages that have duplicates
+# After all installations, remove any conda-installed R packages that have duplicates
 RUN Rscript -e " \
-    # Get all packages in both libraries
-    conda_lib <- '/opt/conda/lib/R/library';     \
+    conda_lib <- '/opt/conda/lib/R/library'; \
     site_lib <- '/opt/conda/lib/R/site-library'; \
-    
     conda_pkgs <- list.files(conda_lib); \
-    site_pkgs <- list.files(site_lib);   \
-    
-    # Find duplicates
+    site_pkgs <- list.files(site_lib); \
     duplicates <- intersect(conda_pkgs, site_pkgs); \
+    if (length(duplicates) > 0) { \
+        unlink(file.path(conda_lib, duplicates), recursive = TRUE); \
+        message('Removed duplicates: ', paste(duplicates, collapse = ', ')); \
+    }"
     
-    # Remove duplicates from conda library (keeping site-library versions)
-    if(length(duplicates) > 0) {     \
-        unlink(file.path(conda_lib, duplicates), recursive = TRUE)   \
-        message('Removed duplicates: ', paste(duplicates, collapse = ', ')) }"
-
 USER $NB_USER
 
 # -------------------------------------------------------------------
