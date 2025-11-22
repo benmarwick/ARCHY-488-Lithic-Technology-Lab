@@ -80,8 +80,7 @@ RUN Rscript -e "\
         'tabula', 'tesselle', 'dimensio', 'tidypaleo', 'rcarbon', 'Bchron', 'geomorph', 'Morpho',  \
         'c14bazAAR', 'Momocs' \
     ),  \
-    type = 'binary',  # Force binary packages \
-    Ncpus = parallel::detectCores())"
+    Ncpus = parallel::detectCores() )"
 
 
 # -------------------------------------------------------------------
