@@ -6,7 +6,7 @@ FROM us-west1-docker.pkg.dev/uwit-mci-axdd/rttl-images/jupyter-rstudio-notebook:
 # Fix PROJ issue & Set Env Vars globally
 ENV PROJ_LIB=/opt/conda/share/proj \
     OPENMX_NO_SIMD=1 \
-    PKG_CXXFLAGS='-Wno-ignored-attributes'  \
+    PKG_CXXFLAGS='-Wno-ignored-attributes -w'  \
     PIP_NO_CACHE_DIR=1 
 
 ARG GITHUB_PAT
@@ -93,6 +93,7 @@ RUN Rscript -e "\
         'tabula', 'tesselle', 'dimensio', 'tidypaleo', 'rcarbon', 'Bchron', 'geomorph', 'Morpho',  \
          'Momocs' \
     ),  \
+    quiet = TRUE, \
     Ncpus = parallel::detectCores() )"
    
 # Install remaining pure GitHub pkgs (Source only) \
@@ -101,9 +102,16 @@ RUN Rscript -e "Sys.setenv(PKG_SYSREQS='false'); \
                  pak::pkg_install(c( \
                         'ropensci/c14bazAAR', \
                         'achetverikov/apastats', \
-                        'dgromer/apa', \ 
                         'benmarwick/polygonoverlap'), \ 
-                        dependencies = FALSE)"
+                        quiet = TRUE)"
+
+# this one has tricky deps
+RUN Rscript -e "Sys.setenv(PKG_SYSREQS='false'); \
+                 options(pak.num_workers = 1); \
+                 pak::pkg_install(c( \
+                        'dgromer/apa'), \ 
+                        dependencies = FALSE, \
+                        quiet = TRUE)"
 
 
 
