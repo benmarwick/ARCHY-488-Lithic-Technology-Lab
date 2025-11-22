@@ -14,8 +14,6 @@ ENV PROJ_LIB=/opt/conda/share/proj \
 RUN echo 'PROJ_LIB=/opt/conda/share/proj' >> /opt/conda/lib/R/etc/Renviron \
  && echo 'PROJ_DATA=/opt/conda/share/proj' >> /opt/conda/lib/R/etc/Renviron
 
-RUN ln -s /opt/conda/share/proj /usr/share/proj
-
 ARG GITHUB_PAT
 ENV GITHUB_PAT=$GITHUB_PAT
 
@@ -27,6 +25,8 @@ ENV PKG_CONFIG_PATH=/opt/conda/lib/pkgconfig
 # SYSTEM LIBRARIES + COMPILERS
 # -------------------------------------------------------------------
 USER root
+
+RUN ln -s /opt/conda/share/proj /usr/share/proj
 
 # 1. Install system libs (Keep this, it's efficient)
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
