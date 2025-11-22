@@ -77,7 +77,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: Check disk usage
-        run: df -h && du -sh /opt/conda
+        run: df -h 
 
       # Build and push Docker image with Buildx
       - name: Build and push Docker image
