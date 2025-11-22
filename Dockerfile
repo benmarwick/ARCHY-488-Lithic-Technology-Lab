@@ -8,7 +8,7 @@ ENV PROJ_LIB=/opt/conda/share/proj \
     OPENMX_NO_SIMD=1 \
     PKG_CXXFLAGS='-Wno-ignored-attributes' \
     LD_LIBRARY_PATH=/opt/conda/lib:$LD_LIBRARY_PATH \
-    PKG_CONFIG_PATH=/opt/conda/lib/pkgconfig:$PKG_CONFIG_PATH \
+    PKG_CONFIG_PATH=/opt/conda/lib/pkgconfig:$PKG_CONFIG_PATH 
 
 # -------------------------------------------------------------------
 # SYSTEM LIBRARIES + COMPILERS
