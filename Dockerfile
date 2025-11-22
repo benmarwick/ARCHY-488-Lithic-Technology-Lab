@@ -66,7 +66,7 @@ RUN mamba install -y -c conda-forge \
     r-factominer r-factoextra r-performance r-fsa r-infer r-psych \
     r-rnaturalearth r-rnaturalearthdata r-maps r-measurements \
     r-ade4 r-aqp r-vegan r-rioja r-rmisc r-quarto \
-    r-plyr r-pbapply r-curl r-pak \
+    r-plyr r-pbapply r-curl r-pak bioconductor-ebimage \
     && mamba clean -afy
 
 
@@ -76,11 +76,12 @@ RUN mamba install -y -c conda-forge \
 
 # Install CRAN/Bioc/Universe pkgs via pak (Parallel, Fast) \
 RUN Rscript -e "\
-    pak::pkg_install(c( \
-        'EBImage', \
+    install.packages(c( \
         'tabula', 'tesselle', 'dimensio', 'tidypaleo', 'rcarbon', 'Bchron', 'geomorph', 'Morpho',  \
         'c14bazAAR', 'Momocs' \
-    ), upgrade = FALSE)"
+    ),  \
+    type = 'binary',  # Force binary packages \
+    Ncpus = 4)"
 
 
 # -------------------------------------------------------------------
