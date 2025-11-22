@@ -96,7 +96,7 @@ RUN Rscript -e "\
     Ncpus = parallel::detectCores() )"
    
 # Install remaining pure GitHub pkgs (Source only) \
-RUN Rscript -e "Sys.setenv(PKG_SYSREQS=false); \
+RUN Rscript -e "Sys.setenv(PKG_SYSREQS='false'); \
                  options(pak.num_workers = 1); \
                  pak::pkg_install(c( \
                         'ropensci/c14bazAAR', \
