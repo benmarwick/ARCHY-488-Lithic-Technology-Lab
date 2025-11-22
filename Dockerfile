@@ -72,7 +72,7 @@ RUN mamba install -y -c conda-forge \
  && mamba clean -afy && rm -rf /opt/conda/pkgs/* 
 
 RUN mamba install -y -c conda-forge -c bioconda \
-    r-sf r-terra r-mass r-remotes r-openmx r-mbess \
+    r-sf r-terra r-mass r-openmx r-mbess \
     r-broom r-cowplot r-ggbeeswarm r-ggally r-ggcorrplot r-ggrepel \
     r-ggpmisc r-ggtext r-ggridges r-ggmap r-plotrix r-rcolorbrewer \
     r-viridis r-see r-gridgraphics r-here r-readxl r-rio \
@@ -81,6 +81,9 @@ RUN mamba install -y -c conda-forge -c bioconda \
     r-ade4 r-aqp r-vegan r-rioja r-rmisc r-quarto \
     r-plyr r-pbapply r-curl r-pak bioconductor-ebimage \
     r-data.table r-jsonlite r-httr  \
+     r-rcarbon r-bchron \
+    r-geomorph r-morpho  r-arkhe r-khroma  \
+     r-afex \
  && mamba clean -afy && rm -rf /opt/conda/pkgs/* 
 
 # -------------------------------------------------------------------
@@ -90,14 +93,10 @@ RUN mamba install -y -c conda-forge -c bioconda \
 # Install CRAN pkgs \
 RUN Rscript -e "\
     install.packages(c( \
-        'tabula', 'tesselle', 'dimensio', 'tidypaleo', 'rcarbon', 'Bchron', 'geomorph', 'Morpho', \
+        'tabula', 'tesselle', 'dimensio', 'tidypaleo',   \
         'Momocs', \
-        # Obscure deps not in conda
-        'arkhe', 'khroma', 'folio', 'isopleuros', \
-        'afex', 'car', \
-        'sp',  \
-        'effectsize', 'parameters', 'performance', \
-        'yyjsonr' \
+        # Obscure deps not in conda \
+          'folio', 'isopleuros',  'yyjsonr' \
     ), \
     quiet = TRUE, \
     Ncpus = parallel::detectCores() )" \
