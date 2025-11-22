@@ -25,14 +25,7 @@ ENV PKG_CONFIG_PATH=/opt/conda/lib/pkgconfig
 # SYSTEM LIBRARIES + COMPILERS
 # -------------------------------------------------------------------
 
-# Remove legacy system path that conflicts with conda’s proj.db
-# (Run as root before switching users)
 USER root
-RUN rm -rf /usr/share/proj
-
-# DO NOT create a symlink to /usr/share/proj; let GDAL/PROJ use conda’s path
-# Ensure conda libs take precedence
-ENV LD_LIBRARY_PATH=/opt/conda/lib
 
 RUN conda config --system --set channel_priority strict
 
@@ -46,7 +39,8 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     libglu1-mesa-dev libxrender-dev libxtst-dev libxt-dev libxext-dev \
     libxau-dev libxdmcp-dev libeigen3-dev \
     libmagick++-dev libmagickwand-dev libmagickcore-dev \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /usr/share/proj
 
 # 2. Configure Compilers
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 \
