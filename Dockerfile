@@ -120,17 +120,28 @@ RUN Rscript -e "Sys.setenv(PKG_SYSREQS='false'); \
 
 
 
-# After all installations, remove any conda-installed R packages that have duplicates
+# After all installations, clean up duplicates intelligently
 RUN Rscript -e " \
     conda_lib <- '/opt/conda/lib/R/library'; \
-    site_lib <- '/opt/conda/lib/R/site-library'; \
+    site_lib  <- '/opt/conda/lib/R/site-library'; \
     conda_pkgs <- list.files(conda_lib); \
-    site_pkgs <- list.files(site_lib); \
+    site_pkgs  <- list.files(site_lib); \
     duplicates <- intersect(conda_pkgs, site_pkgs); \
-    if (length(duplicates) > 0) { \
-        unlink(file.path(conda_lib, duplicates), recursive = TRUE); \
-        message('Removed duplicates: ', paste(duplicates, collapse = ', ')); \
+    # Define packages where conda binaries should be kept
+    keep_conda <- c('sf','terra','stringi','Rcpp','units','wk','s2'); \
+    # For duplicates in keep_conda, remove site-library copies
+    to_remove_site <- intersect(duplicates, keep_conda); \
+    if (length(to_remove_site) > 0) { \
+        unlink(file.path(site_lib, to_remove_site), recursive = TRUE); \
+        message('Removed site-library duplicates (kept conda binaries): ', paste(to_remove_site, collapse=', ')); \
+    } \
+    # For all other duplicates, remove conda copies (keep CRAN/pak versions)
+    to_remove_conda <- setdiff(duplicates, keep_conda); \
+    if (length(to_remove_conda) > 0) { \
+        unlink(file.path(conda_lib, to_remove_conda), recursive = TRUE); \
+        message('Removed conda duplicates (kept CRAN/pak versions): ', paste(to_remove_conda, collapse=', ')); \
     }"
+
     
 USER $NB_USER
 
