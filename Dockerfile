@@ -53,7 +53,7 @@ RUN mkdir -p /opt/conda/lib/R/site-library \
     && chown -R $NB_UID:$NB_GID /opt/conda/lib/R/site-library
 
 # -------------------------------------------------------------------
-# MAMBA: Core Geospatial
+# MAMBA: Core R packages on conda
 # -------------------------------------------------------------------
 # Keeping this is fine as it handles complex GDAL linking
 RUN mamba install -y -c conda-forge -c bioconda \
@@ -74,11 +74,11 @@ RUN mamba install -y -c conda-forge -c bioconda \
 # Remaining CRAN & GitHub packages (Source installs)
 # -------------------------------------------------------------------
 
-# Install CRAN/Bioc/Universe pkgs via pak (Parallel, Fast) \
+# Install CRAN pkgs \
 RUN Rscript -e "\
     install.packages(c( \
         'tabula', 'tesselle', 'dimensio', 'tidypaleo', 'rcarbon', 'Bchron', 'geomorph', 'Morpho',  \
-        'c14bazAAR', 'Momocs' \
+         'Momocs' \
     ),  \
     Ncpus = parallel::detectCores() )"
 
@@ -91,6 +91,7 @@ RUN Rscript -e "install.packages('sf', configure.args='--with-proj-lib=/opt/cond
 # Install remaining pure GitHub pkgs (Source only) \
 RUN Rscript -e "\
     remotes::install_github(c( \
+        'ropensci/c14bazAAR', \
         'achetverikov/apastats', \
         'dgromer/apa', \
         'benmarwick/polygonoverlap' \
