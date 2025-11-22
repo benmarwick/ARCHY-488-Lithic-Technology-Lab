@@ -8,6 +8,8 @@ ENV PROJ_LIB=/opt/conda/share/proj \
     OPENMX_NO_SIMD=1 \
     PKG_CXXFLAGS='-Wno-ignored-attributes -w'  \
     PIP_NO_CACHE_DIR=1 
+    PROJ_LIB=/opt/conda/share/proj \
+    PROJ_DATA=/opt/conda/share/proj
 
 ARG GITHUB_PAT
 ENV GITHUB_PAT=$GITHUB_PAT
@@ -81,9 +83,7 @@ RUN mamba install -y -c conda-forge -c bioconda \
     r-ade4 r-aqp r-vegan r-rioja r-rmisc r-quarto \
     r-plyr r-pbapply r-curl r-pak bioconductor-ebimage \
     r-data.table r-jsonlite r-httr  \
-     r-rcarbon r-bchron \
-    r-geomorph r-morpho  r-arkhe r-khroma  \
-     r-afex \
+     r-rcarbon  r-afex \
  && mamba clean -afy && rm -rf /opt/conda/pkgs/* 
 
 # -------------------------------------------------------------------
@@ -93,10 +93,10 @@ RUN mamba install -y -c conda-forge -c bioconda \
 # Install CRAN pkgs \
 RUN Rscript -e "\
     install.packages(c( \
-        'tabula', 'tesselle', 'dimensio', 'tidypaleo',   \
+        'tabula', 'tesselle', 'dimensio', 'tidypaleo', 'bchron', 'geomorph', \
         'Momocs', \
         # Obscure deps not in conda \
-          'folio', 'isopleuros',  'yyjsonr' \
+          'folio', 'isopleuros',  'yyjsonr', 'arkhe',  'khroma', 'Morpho' \
     ), \
     quiet = TRUE, \
     Ncpus = parallel::detectCores() )" \
