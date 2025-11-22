@@ -58,7 +58,7 @@ RUN mkdir -p /opt/conda/lib/R/site-library \
 # Keeping this is fine as it handles complex GDAL linking
 RUN mamba install -y -c conda-forge -c bioconda \
     r-base=4.4 \
-    r-sf r-terra r-mass r-remotes  r-openmx r-mbess \
+    r-terra r-mass r-remotes  r-openmx r-mbess \
     fftw gdal sqlite r-rcpp r-rcppeigen \
     r-broom r-cowplot r-ggbeeswarm r-ggally r-ggcorrplot r-ggrepel \
     r-ggpmisc r-ggtext r-ggridges r-ggmap r-plotrix r-rcolorbrewer \
@@ -84,10 +84,9 @@ RUN Rscript -e "\
 
 
 # -------------------------------------------------------------------
-# Fix GEOS version mismatch by reinstalling sf with correct libraries
+# Fix GEOS version mismatch by installing sf with correct libraries
 # -------------------------------------------------------------------
-RUN Rscript -e "remove.packages('sf'); \
-    install.packages('sf', configure.args='--with-proj-lib=/opt/conda/lib --with-gdal-config=/opt/conda/bin/gdal-config --with-geos-config=/opt/conda/bin/geos-config')"
+RUN Rscript -e "install.packages('sf', configure.args='--with-proj-lib=/opt/conda/lib --with-gdal-config=/opt/conda/bin/gdal-config --with-geos-config=/opt/conda/bin/geos-config')"
     
 # Install remaining pure GitHub pkgs (Source only) \
 RUN Rscript -e "\
@@ -97,7 +96,7 @@ RUN Rscript -e "\
         'benmarwick/polygonoverlap' \
     ), upgrade = 'never');"
 
-# After all installations, remove any conda-installed R packages that have duplicates
+
 # After all installations, remove any conda-installed R packages that have duplicates
 RUN Rscript -e " \
     conda_lib <- '/opt/conda/lib/R/library'; \
