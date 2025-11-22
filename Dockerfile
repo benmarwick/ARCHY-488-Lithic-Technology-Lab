@@ -56,7 +56,7 @@ RUN mkdir -p /opt/conda/lib/R/site-library \
 # MAMBA: Core Geospatial
 # -------------------------------------------------------------------
 # Keeping this is fine as it handles complex GDAL linking
-RUN mamba install -y -c conda-forge \
+RUN mamba install -y -c conda-forge -c bioconda \
     r-base=4.4 \
     r-sf r-terra r-mass r-remotes  r-openmx r-mbess \
     fftw gdal sqlite r-rcpp r-rcppeigen \
