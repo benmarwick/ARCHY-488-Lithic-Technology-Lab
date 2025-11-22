@@ -88,7 +88,7 @@ RUN mamba install -y -c conda-forge -c bioconda \
     r-ade4 r-aqp r-vegan r-rioja r-rmisc r-quarto \
     r-plyr r-pbapply r-curl r-pak bioconductor-ebimage \
     r-data.table r-jsonlite r-httr \
-    r-afex \
+    r-afex  r-ggforce \
     r-extradistr r-magic r-linprog r-rcppprogress \
     r-styler r-ggstance r-rgl r-geometry r-rvcg \
     r-doparallel r-colorramps r-bezier r-mclust \
