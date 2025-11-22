@@ -81,7 +81,7 @@ RUN Rscript -e "\
         'c14bazAAR', 'Momocs' \
     ),  \
     type = 'binary',  # Force binary packages \
-    Ncpus = 4)"
+    Ncpus = parallel::detectCores())"
 
 
 # -------------------------------------------------------------------
