@@ -69,8 +69,7 @@ RUN mkdir -p /opt/conda/lib/R/site-library \
 
 RUN mamba install -y -c conda-forge \
     r-base=4.4 proj proj-data gdal geos sqlite fftw \
- && mamba clean -afy && rm -rf /opt/conda/pkgs/* \
-    > /dev/null 2>&1
+ && mamba clean -afy && rm -rf /opt/conda/pkgs/* 
 
 RUN mamba install -y -c conda-forge -c bioconda \
     r-sf r-terra r-mass r-remotes r-openmx r-mbess \
@@ -82,8 +81,7 @@ RUN mamba install -y -c conda-forge -c bioconda \
     r-ade4 r-aqp r-vegan r-rioja r-rmisc r-quarto \
     r-plyr r-pbapply r-curl r-pak bioconductor-ebimage \
     r-data.table r-jsonlite r-httr  \
- && mamba clean -afy && rm -rf /opt/conda/pkgs/* \
-    > /dev/null 2>&1
+ && mamba clean -afy && rm -rf /opt/conda/pkgs/* 
 
 # -------------------------------------------------------------------
 # Remaining CRAN & GitHub packages (Source installs)
@@ -97,24 +95,23 @@ RUN Rscript -e "\
     ),  \
     quiet = TRUE, \
     Ncpus = parallel::detectCores() )" \
-    > /dev/null 2>&1
+    1> /dev/null
    
 # Install remaining pure GitHub pkgs (Source only) \
 RUN Rscript -e "Sys.setenv(PKG_SYSREQS='false'); \
                  options(pak.num_workers = 1); \
                  pak::pkg_install(c( \
                         'ropensci/c14bazAAR', \
-                        'achetverikov/apastats'), \
-                        'benmarwick/polygonoverlap')" \
-    > /dev/null 2>&1
+                        'achetverikov/apastats', \
+                        'benmarwick/polygonoverlap'))" \
+    1> /dev/null
 
 # this one has tricky deps
 RUN Rscript -e "Sys.setenv(PKG_SYSREQS='false'); \
                  options(pak.num_workers = 1); \
-                 pak::pkg_install(c( \
-                        'dgromer/apa'), \ 
-                        dependencies = FALSE)" \
-    > /dev/null 2>&1
+                 pak::pkg_install('dgromer/apa', dependencies = FALSE)" \
+    1> /dev/null
+
 
 
 
