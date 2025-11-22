@@ -7,11 +7,13 @@ FROM us-west1-docker.pkg.dev/uwit-mci-axdd/rttl-images/jupyter-rstudio-notebook:
 ENV PROJ_LIB=/opt/conda/share/proj \
     OPENMX_NO_SIMD=1 \
     PKG_CXXFLAGS='-Wno-ignored-attributes'  \
-    PIP_NO_CACHE_DIR=1 \
-    GITHUB_PAT=${{ secrets.GITHUB_TOKEN }}
+    PIP_NO_CACHE_DIR=1 
 
-ENV LD_LIBRARY_PATH=/opt/conda/lib:$LD_LIBRARY_PATH \
-ENV  PKG_CONFIG_PATH=/opt/conda/lib/pkgconfig:$PKG_CONFIG_PATH 
+ARG GITHUB_PAT
+ENV GITHUB_PAT=$GITHUB_PAT
+
+ENV LD_LIBRARY_PATH=/opt/conda/lib
+ENV PKG_CONFIG_PATH=/opt/conda/lib/pkgconfig
 
 
 # -------------------------------------------------------------------
@@ -32,7 +34,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     && rm -rf /var/lib/apt/lists/*
 
 # because we use conda to handle proj
-RUN apt-get remove -y libproj-dev
+RUN apt-get purge -y libproj-dev && apt-get autoremove -y
 
 # 2. Configure Compilers
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 \
