@@ -9,6 +9,7 @@ ENV PROJ_LIB=/opt/conda/share/proj \
     PKG_CXXFLAGS='-Wno-ignored-attributes -w'  \
     PIP_NO_CACHE_DIR=1 \
     PROJ_DATA=/opt/conda/share/proj
+    PROJ_NETWORK=ON
 
 RUN echo 'PROJ_LIB=/opt/conda/share/proj' >> /opt/conda/lib/R/etc/Renviron \
  && echo 'PROJ_DATA=/opt/conda/share/proj' >> /opt/conda/lib/R/etc/Renviron
@@ -38,9 +39,6 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     libxau-dev libxdmcp-dev libeigen3-dev \
     libmagick++-dev libmagickwand-dev libmagickcore-dev \
     && rm -rf /var/lib/apt/lists/*
-
-# because we use conda to handle proj
-RUN apt-get purge -y libproj-dev && apt-get autoremove -y
 
 # 2. Configure Compilers
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 \
@@ -91,7 +89,7 @@ RUN mamba install -y -c conda-forge -c bioconda \
     r-extradistr r-magic r-linprog r-rcppprogress \
     r-styler r-ggstance r-rgl r-geometry r-rvcg \
     r-doparallel r-colorramps r-bezier r-mclust \
- && mamba clean -afy && rm -rf /opt/conda/pkgs/* 
+ && mamba clean -y  -t
 
 # -------------------------------------------------------------------
 # Remaining CRAN & GitHub packages (Source installs)
