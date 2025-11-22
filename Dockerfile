@@ -102,14 +102,14 @@ RUN Rscript -e "Sys.setenv(PKG_SYSREQS='false'); \
                  pak::pkg_install(c( \
                         'ropensci/c14bazAAR', \
                         'achetverikov/apastats', \
-                        'benmarwick/polygonoverlap')"
+                        'benmarwick/polygonoverlap'))"
 
 # this one has tricky deps
 RUN Rscript -e "Sys.setenv(PKG_SYSREQS='false'); \
                  options(pak.num_workers = 1); \
                  pak::pkg_install(c( \
                         'dgromer/apa'), \ 
-                        dependencies = FALSE)"
+                        dependencies = FALSE))"
 
 
 
