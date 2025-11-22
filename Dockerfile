@@ -24,7 +24,6 @@ ENV PKG_CONFIG_PATH=/opt/conda/lib/pkgconfig
 USER root
 
 RUN conda config --system --set channel_priority strict
-RUN chmod 644 /opt/conda/share/proj/proj.db
 
 # 1. Install system libs (Keep this, it's efficient)
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -97,7 +96,8 @@ RUN echo 'PROJ_LIB=/opt/conda/share/proj'  >> /opt/conda/lib/R/etc/Renviron \
  && echo 'PROJ_DATA=/opt/conda/share/proj' >> /opt/conda/lib/R/etc/Renviron.site \
  && echo 'Sys.setenv(PROJ_LIB="/opt/conda/share/proj")' >> /opt/conda/lib/R/etc/Rprofile.site \
  && echo 'Sys.setenv(PROJ_DATA="/opt/conda/share/proj")' >> /opt/conda/lib/R/etc/Rprofile.site \
- && echo 'options(expressions = 500000)' >> /opt/conda/lib/R/etc/Rprofile.site
+ && echo 'options(expressions = 500000)' >> /opt/conda/lib/R/etc/Rprofile.site \
+ && chmod 644 /opt/conda/share/proj/proj.db
 
  RUN echo '.First <- function() { \
   Sys.setenv(PROJ_LIB="/opt/conda/share/proj"); \
