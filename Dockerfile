@@ -97,7 +97,8 @@ RUN mamba install -y -c conda-forge -c bioconda \
     r-extradistr r-magic r-linprog r-rcppprogress \
     r-styler r-ggstance r-rgl r-geometry r-rvcg \
     r-doparallel r-colorramps r-bezier r-mclust \
- && mamba clean -y  -t
+ && mamba clean -y  -t && rm -rf /opt/conda/pkgs/*
+
 
 # -------------------------------------------------------------------
 # Remaining CRAN & GitHub packages (Source installs)
