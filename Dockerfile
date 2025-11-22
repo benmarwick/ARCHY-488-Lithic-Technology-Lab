@@ -6,9 +6,13 @@ FROM us-west1-docker.pkg.dev/uwit-mci-axdd/rttl-images/jupyter-rstudio-notebook:
 # Fix PROJ issue & Set Env Vars globally
 ENV PROJ_LIB=/opt/conda/share/proj \
     OPENMX_NO_SIMD=1 \
-    PKG_CXXFLAGS='-Wno-ignored-attributes' \
-    LD_LIBRARY_PATH=/opt/conda/lib:$LD_LIBRARY_PATH \
-    PKG_CONFIG_PATH=/opt/conda/lib/pkgconfig:$PKG_CONFIG_PATH 
+    PKG_CXXFLAGS='-Wno-ignored-attributes'  \
+    PIP_NO_CACHE_DIR=1 \
+    GITHUB_PAT=${{ secrets.GITHUB_TOKEN }}
+
+ENV LD_LIBRARY_PATH=/opt/conda/lib:$LD_LIBRARY_PATH \
+ENV  PKG_CONFIG_PATH=/opt/conda/lib/pkgconfig:$PKG_CONFIG_PATH 
+
 
 # -------------------------------------------------------------------
 # SYSTEM LIBRARIES + COMPILERS
@@ -26,6 +30,9 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     libxau-dev libxdmcp-dev libeigen3-dev \
     libmagick++-dev libmagickwand-dev libmagickcore-dev \
     && rm -rf /var/lib/apt/lists/*
+
+# because we use conda to handle proj
+RUN apt-get remove -y libproj-dev
 
 # 2. Configure Compilers
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 \
@@ -71,8 +78,8 @@ RUN mamba install -y -c conda-forge -c bioconda \
     r-rnaturalearth r-rnaturalearthdata r-maps r-measurements \
     r-ade4 r-aqp r-vegan r-rioja r-rmisc r-quarto \
     r-plyr r-pbapply r-curl r-pak bioconductor-ebimage \
+    r-data.table r-jsonlite r-httr  \
  && mamba clean -afy && rm -rf /opt/conda/pkgs/*
-
 
 # -------------------------------------------------------------------
 # Remaining CRAN & GitHub packages (Source installs)
@@ -87,7 +94,9 @@ RUN Rscript -e "\
     Ncpus = parallel::detectCores() )"
    
 # Install remaining pure GitHub pkgs (Source only) \
-RUN Rscript -e "pak::pkg_install(c( \
+RUN Rscript -e "Sys.setenv(PKG_SYSREQS=false); \
+                 options(pak.num_workers = 1); \
+                 pak::pkg_install(c( \
                         'ropensci/c14bazAAR', \
                         'achetverikov/apastats', \
                         'dgromer/apa', \ 
