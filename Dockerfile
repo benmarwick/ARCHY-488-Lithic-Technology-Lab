@@ -58,6 +58,7 @@ RUN mkdir -p /opt/conda/lib/R/site-library \
 # Keeping this is fine as it handles complex GDAL linking
 RUN mamba install -y -c conda-forge -c bioconda \
     r-base=4.4 \
+    proj proj-data proj-bin \
     r-terra r-mass r-remotes  r-openmx r-mbess \
     fftw gdal sqlite r-rcpp r-rcppeigen \
     r-broom r-cowplot r-ggbeeswarm r-ggally r-ggcorrplot r-ggrepel \
