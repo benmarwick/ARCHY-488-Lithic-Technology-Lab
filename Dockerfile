@@ -10,6 +10,11 @@ ENV PROJ_LIB=/opt/conda/share/proj \
     PIP_NO_CACHE_DIR=1 \
     PROJ_DATA=/opt/conda/share/proj
 
+RUN echo 'PROJ_LIB=/opt/conda/share/proj' >> /opt/conda/lib/R/etc/Renviron \
+ && echo 'PROJ_DATA=/opt/conda/share/proj' >> /opt/conda/lib/R/etc/Renviron
+
+RUN ln -s /opt/conda/share/proj /usr/share/proj
+
 ARG GITHUB_PAT
 ENV GITHUB_PAT=$GITHUB_PAT
 
