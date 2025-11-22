@@ -8,7 +8,7 @@ ENV PROJ_LIB=/opt/conda/share/proj \
     OPENMX_NO_SIMD=1 \
     PKG_CXXFLAGS='-Wno-ignored-attributes -w'  \
     PIP_NO_CACHE_DIR=1 \
-    PROJ_DATA=/opt/conda/share/proj
+    PROJ_DATA=/opt/conda/share/proj \
     PROJ_NETWORK=ON
 
 RUN echo 'PROJ_LIB=/opt/conda/share/proj' >> /opt/conda/lib/R/etc/Renviron \
