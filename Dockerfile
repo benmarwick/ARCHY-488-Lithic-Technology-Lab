@@ -103,31 +103,19 @@ RUN mamba install -y -c conda-forge -c bioconda \
 # Remaining CRAN & GitHub packages (Source installs)
 # -------------------------------------------------------------------
 
-# Install CRAN pkgs \
+# Install CRAN and GitHub packages
 RUN Rscript -e "\
     install.packages(c( \
         'tabula', 'tesselle', 'dimensio', 'tidypaleo', 'Bchron', 'geomorph', \
-        'Momocs', \
-        # Obscure deps not in conda \
-          'folio', 'isopleuros',  'yyjsonr', 'arkhe',  'khroma', 'Morpho' \
-    ), \
-    quiet = TRUE, \
-    Ncpus = parallel::detectCores() )" \
-    1> /dev/null
-   
-# Install remaining pure GitHub pkgs (Source only) \
-RUN Rscript -e "Sys.setenv(PKG_SYSREQS='false'); \
-                 options(pak.num_workers = 1); \
-                 pak::pkg_install(c( \
-                        'ropensci/c14bazAAR', \
-                        'achetverikov/apastats', \
-                        'benmarwick/polygonoverlap'), dependencies = FALSE)" \
-    1> /dev/null
-
-# this one has tricky deps
-RUN Rscript -e "Sys.setenv(PKG_SYSREQS='false'); \
-                 options(pak.num_workers = 1); \
-                 pak::pkg_install('dgromer/apa', dependencies = FALSE)" \
+        'Momocs', 'folio', 'isopleuros', 'yyjsonr', 'arkhe', 'khroma', 'Morpho' \
+    ), quiet = TRUE, Ncpus = parallel::detectCores()); \
+    Sys.setenv(PKG_SYSREQS='false'); \
+    options(pak.num_workers = 1); \
+    pak::pkg_install(c( \
+        'ropensci/c14bazAAR', \
+        'achetverikov/apastats', \
+        'benmarwick/polygonoverlap', \
+        'dgromer/apa'), dependencies = FALSE)" \
     1> /dev/null
 
 # After all installations, clean up duplicates intelligently
