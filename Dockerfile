@@ -58,7 +58,7 @@ RUN mkdir -p /opt/conda/lib/R/site-library \
 
 RUN mamba install -y -c conda-forge \
     r-base=4.4 proj proj-data gdal sqlite fftw \
- && mamba clean -afy
+ && mamba clean -afy && rm -rf /opt/conda/pkgs/*
 
 RUN mamba install -y -c conda-forge -c bioconda \
     r-terra r-mass r-remotes r-openmx r-mbess \
@@ -69,7 +69,7 @@ RUN mamba install -y -c conda-forge -c bioconda \
     r-rnaturalearth r-rnaturalearthdata r-maps r-measurements \
     r-ade4 r-aqp r-vegan r-rioja r-rmisc r-quarto \
     r-plyr r-pbapply r-curl r-pak bioconductor-ebimage \
- && mamba clean -afy
+ && mamba clean -afy && rm -rf /opt/conda/pkgs/*
 
 
 # -------------------------------------------------------------------
