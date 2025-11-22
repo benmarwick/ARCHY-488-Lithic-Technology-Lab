@@ -53,14 +53,15 @@ RUN mkdir -p /opt/conda/lib/R/site-library \
     && chown -R $NB_UID:$NB_GID /opt/conda/lib/R/site-library
 
 # -------------------------------------------------------------------
-# MAMBA: Core R packages on conda
+# MAMBA: Core R packages and libraries from conda
 # -------------------------------------------------------------------
-# Keeping this is fine as it handles complex GDAL linking
+
+RUN mamba install -y -c conda-forge \
+    r-base=4.4 proj proj-data gdal sqlite fftw \
+ && mamba clean -afy
+
 RUN mamba install -y -c conda-forge -c bioconda \
-    r-base=4.4 \
-    proj proj-data  \
-    r-terra r-mass r-remotes  r-openmx r-mbess \
-    fftw gdal sqlite r-rcpp r-rcppeigen \
+    r-terra r-mass r-remotes r-openmx r-mbess \
     r-broom r-cowplot r-ggbeeswarm r-ggally r-ggcorrplot r-ggrepel \
     r-ggpmisc r-ggtext r-ggridges r-ggmap r-plotrix r-rcolorbrewer \
     r-viridis r-see r-gridgraphics r-here r-readxl r-rio \
@@ -68,7 +69,7 @@ RUN mamba install -y -c conda-forge -c bioconda \
     r-rnaturalearth r-rnaturalearthdata r-maps r-measurements \
     r-ade4 r-aqp r-vegan r-rioja r-rmisc r-quarto \
     r-plyr r-pbapply r-curl r-pak bioconductor-ebimage \
-    && mamba clean -afy
+ && mamba clean -afy
 
 
 # -------------------------------------------------------------------
