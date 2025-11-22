@@ -95,7 +95,7 @@ RUN mamba install -y -c conda-forge -c bioconda \
 # Install CRAN pkgs \
 RUN Rscript -e "\
     install.packages(c( \
-        'tabula', 'tesselle', 'dimensio', 'tidypaleo', 'bchron', 'geomorph', \
+        'tabula', 'tesselle', 'dimensio', 'tidypaleo', 'Bchron', 'geomorph', \
         'Momocs', \
         # Obscure deps not in conda \
           'folio', 'isopleuros',  'yyjsonr', 'arkhe',  'khroma', 'Morpho' \
