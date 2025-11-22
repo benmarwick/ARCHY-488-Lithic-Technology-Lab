@@ -68,7 +68,7 @@ RUN mkdir -p /opt/conda/lib/R/site-library \
 # -------------------------------------------------------------------
 
 RUN mamba install -y -c conda-forge \
-    r-base=4.4 proj proj-data gdal=3.6.4 geos sqlite fftw \
+    r-base=4.4.* proj proj-data gdal geos sqlite fftw \
  && mamba clean -afy && rm -rf /opt/conda/pkgs/* 
 
 RUN mamba install -y -c conda-forge -c bioconda \
