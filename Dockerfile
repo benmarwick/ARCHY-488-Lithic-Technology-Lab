@@ -6,7 +6,9 @@ FROM us-west1-docker.pkg.dev/uwit-mci-axdd/rttl-images/jupyter-rstudio-notebook:
 # Fix PROJ issue & Set Env Vars globally
 ENV PROJ_LIB=/opt/conda/share/proj \
     OPENMX_NO_SIMD=1 \
-    PKG_CXXFLAGS='-Wno-ignored-attributes'
+    PKG_CXXFLAGS='-Wno-ignored-attributes' \
+    LD_LIBRARY_PATH=/opt/conda/lib:$LD_LIBRARY_PATH \
+    PKG_CONFIG_PATH=/opt/conda/lib/pkgconfig:$PKG_CONFIG_PATH \
 
 # -------------------------------------------------------------------
 # SYSTEM LIBRARIES + COMPILERS
@@ -57,11 +59,11 @@ RUN mkdir -p /opt/conda/lib/R/site-library \
 # -------------------------------------------------------------------
 
 RUN mamba install -y -c conda-forge \
-    r-base=4.4 proj proj-data gdal sqlite fftw \
+    r-base=4.4 proj proj-data gdal geos sqlite fftw \
  && mamba clean -afy && rm -rf /opt/conda/pkgs/*
 
 RUN mamba install -y -c conda-forge -c bioconda \
-    r-terra r-mass r-remotes r-openmx r-mbess \
+    r-sf r-terra r-mass r-remotes r-openmx r-mbess \
     r-broom r-cowplot r-ggbeeswarm r-ggally r-ggcorrplot r-ggrepel \
     r-ggpmisc r-ggtext r-ggridges r-ggmap r-plotrix r-rcolorbrewer \
     r-viridis r-see r-gridgraphics r-here r-readxl r-rio \
@@ -83,21 +85,15 @@ RUN Rscript -e "\
          'Momocs' \
     ),  \
     Ncpus = parallel::detectCores() )"
-
-
-# -------------------------------------------------------------------
-# Fix GEOS version mismatch by installing sf with correct libraries
-# -------------------------------------------------------------------
-RUN Rscript -e "install.packages('sf', configure.args='--with-proj-lib=/opt/conda/lib --with-gdal-config=/opt/conda/bin/gdal-config --with-geos-config=/opt/conda/bin/geos-config')"
-    
+   
 # Install remaining pure GitHub pkgs (Source only) \
-RUN Rscript -e "\
-    remotes::install_github(c( \
-        'ropensci/c14bazAAR', \
-        'achetverikov/apastats', \
-        'dgromer/apa', \
-        'benmarwick/polygonoverlap' \
-    ), upgrade = 'never');"
+RUN Rscript -e "pak::pkg_install(c( \
+                        'ropensci/c14bazAAR', \
+                        'achetverikov/apastats', \
+                        'dgromer/apa', \ 
+                        'benmarwick/polygonoverlap'), \ 
+                        dependencies = FALSE)"
+
 
 
 # After all installations, remove any conda-installed R packages that have duplicates
