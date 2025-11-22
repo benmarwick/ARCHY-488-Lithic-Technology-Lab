@@ -7,8 +7,7 @@ FROM us-west1-docker.pkg.dev/uwit-mci-axdd/rttl-images/jupyter-rstudio-notebook:
 ENV PROJ_LIB=/opt/conda/share/proj \
     OPENMX_NO_SIMD=1 \
     PKG_CXXFLAGS='-Wno-ignored-attributes -w'  \
-    PIP_NO_CACHE_DIR=1 
-    PROJ_LIB=/opt/conda/share/proj \
+    PIP_NO_CACHE_DIR=1 \
     PROJ_DATA=/opt/conda/share/proj
 
 ARG GITHUB_PAT
