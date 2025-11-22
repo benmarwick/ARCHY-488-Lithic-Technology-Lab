@@ -14,7 +14,11 @@ ENV PROJ_LIB=/opt/conda/share/proj \
 # Ensure R sessions inherit the correct variables
 RUN echo 'PROJ_LIB=/opt/conda/share/proj'  >> /opt/conda/lib/R/etc/Renviron \
  && echo 'PROJ_DATA=/opt/conda/share/proj' >> /opt/conda/lib/R/etc/Renviron \
- && echo 'options(expressions = 500000)' >> /opt/conda/lib/R/etc/Rprofile.site
+ && echo 'options(expressions = 500000)' >> /opt/conda/lib/R/etc/Rprofile.site \
+ && echo 'PROJ_LIB=/opt/conda/share/proj'  >> /opt/conda/lib/R/etc/Renviron.site \
+ && echo 'PROJ_DATA=/opt/conda/share/proj' >> /opt/conda/lib/R/etc/Renviron.site \
+ && echo 'Sys.setenv(PROJ_LIB="/opt/conda/share/proj")' >> /opt/conda/lib/R/etc/Rprofile.site \
+ && echo 'Sys.setenv(PROJ_DATA="/opt/conda/share/proj")' >> /opt/conda/lib/R/etc/Rprofile.site
 
 ARG GITHUB_PAT
 ENV GITHUB_PAT=$GITHUB_PAT
@@ -29,6 +33,7 @@ ENV PKG_CONFIG_PATH=/opt/conda/lib/pkgconfig
 USER root
 
 RUN conda config --system --set channel_priority strict
+RUN chmod 644 /opt/conda/share/proj/proj.db
 
 # 1. Install system libs (Keep this, it's efficient)
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -129,7 +134,11 @@ RUN Rscript -e "Sys.setenv(PKG_SYSREQS='false'); \
 COPY cleanup.R /tmp/cleanup.R
 RUN Rscript /tmp/cleanup.R
 
-    
+# Set PROJ vars for the non-root user as well
+RUN echo 'PROJ_LIB=/opt/conda/share/proj'  >> /home/$NB_USER/.Renviron \
+ && echo 'PROJ_DATA=/opt/conda/share/proj' >> /home/$NB_USER/.Renviron \
+ && chown $NB_USER:$NB_GID /home/$NB_USER/.Renviron 2>/dev/null || true
+
 USER $NB_USER
 
 # -------------------------------------------------------------------
