@@ -68,7 +68,7 @@ RUN mkdir -p /opt/conda/lib/R/site-library \
 # -------------------------------------------------------------------
 
 RUN mamba install -y -c conda-forge \
-    r-base=4.4 proj proj-data gdal geos sqlite fftw \
+    r-base=4.4 proj proj-data gdal=3.6.4 geos sqlite fftw \
  && mamba clean -afy && rm -rf /opt/conda/pkgs/* 
 
 RUN mamba install -y -c conda-forge -c bioconda \
@@ -90,9 +90,15 @@ RUN mamba install -y -c conda-forge -c bioconda \
 # Install CRAN pkgs \
 RUN Rscript -e "\
     install.packages(c( \
-        'tabula', 'tesselle', 'dimensio', 'tidypaleo', 'rcarbon', 'Bchron', 'geomorph', 'Morpho',  \
-         'Momocs' \
-    ),  \
+        'tabula', 'tesselle', 'dimensio', 'tidypaleo', 'rcarbon', 'Bchron', 'geomorph', 'Morpho', \
+        'Momocs', \
+        # Obscure deps not in conda
+        'arkhe', 'khroma', 'folio', 'isopleuros', \
+        'afex', 'car', \
+        'sp',  \
+        'effectsize', 'parameters', 'performance', \
+        'yyjsonr' \
+    ), \
     quiet = TRUE, \
     Ncpus = parallel::detectCores() )" \
     1> /dev/null
@@ -103,7 +109,7 @@ RUN Rscript -e "Sys.setenv(PKG_SYSREQS='false'); \
                  pak::pkg_install(c( \
                         'ropensci/c14bazAAR', \
                         'achetverikov/apastats', \
-                        'benmarwick/polygonoverlap'))" \
+                        'benmarwick/polygonoverlap'), dependencies = FALSE)" \
     1> /dev/null
 
 # this one has tricky deps
