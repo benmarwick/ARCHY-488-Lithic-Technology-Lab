@@ -11,7 +11,8 @@ ENV PROJ_LIB=/opt/conda/share/proj \
     PROJ_DATA=/opt/conda/share/proj \
     PROJ_NETWORK=ON
 
-RUN echo 'PROJ_LIB=/opt/conda/share/proj' >> /opt/conda/lib/R/etc/Renviron \
+# Ensure R sessions inherit the correct variables
+RUN echo 'PROJ_LIB=/opt/conda/share/proj'  >> /opt/conda/lib/R/etc/Renviron \
  && echo 'PROJ_DATA=/opt/conda/share/proj' >> /opt/conda/lib/R/etc/Renviron
 
 ARG GITHUB_PAT
@@ -20,13 +21,20 @@ ENV GITHUB_PAT=$GITHUB_PAT
 ENV LD_LIBRARY_PATH=/opt/conda/lib
 ENV PKG_CONFIG_PATH=/opt/conda/lib/pkgconfig
 
-
 # -------------------------------------------------------------------
 # SYSTEM LIBRARIES + COMPILERS
 # -------------------------------------------------------------------
-USER root
 
-RUN ln -s /opt/conda/share/proj /usr/share/proj
+# Remove legacy system path that conflicts with conda’s proj.db
+# (Run as root before switching users)
+USER root
+RUN rm -rf /usr/share/proj
+
+# DO NOT create a symlink to /usr/share/proj; let GDAL/PROJ use conda’s path
+# Ensure conda libs take precedence
+ENV LD_LIBRARY_PATH=/opt/conda/lib
+
+RUN conda config --system --set channel_priority strict
 
 # 1. Install system libs (Keep this, it's efficient)
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
