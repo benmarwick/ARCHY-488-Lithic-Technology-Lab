@@ -11,15 +11,6 @@ ENV PROJ_LIB=/opt/conda/share/proj \
     PROJ_DATA=/opt/conda/share/proj \
     PROJ_NETWORK=ON
 
-# Ensure R sessions inherit the correct variables
-RUN echo 'PROJ_LIB=/opt/conda/share/proj'  >> /opt/conda/lib/R/etc/Renviron \
- && echo 'PROJ_DATA=/opt/conda/share/proj' >> /opt/conda/lib/R/etc/Renviron \
- && echo 'options(expressions = 500000)' >> /opt/conda/lib/R/etc/Rprofile.site \
- && echo 'PROJ_LIB=/opt/conda/share/proj'  >> /opt/conda/lib/R/etc/Renviron.site \
- && echo 'PROJ_DATA=/opt/conda/share/proj' >> /opt/conda/lib/R/etc/Renviron.site \
- && echo 'Sys.setenv(PROJ_LIB="/opt/conda/share/proj")' >> /opt/conda/lib/R/etc/Rprofile.site \
- && echo 'Sys.setenv(PROJ_DATA="/opt/conda/share/proj")' >> /opt/conda/lib/R/etc/Rprofile.site
-
 ARG GITHUB_PAT
 ENV GITHUB_PAT=$GITHUB_PAT
 
@@ -99,6 +90,19 @@ RUN mamba install -y -c conda-forge -c bioconda \
     r-doparallel r-colorramps r-bezier r-mclust \
  && mamba clean -y  -t && rm -rf /opt/conda/pkgs/*
 
+ # NOW set the environment variables after PROJ is installed
+RUN echo 'PROJ_LIB=/opt/conda/share/proj'  >> /opt/conda/lib/R/etc/Renviron \
+ && echo 'PROJ_DATA=/opt/conda/share/proj' >> /opt/conda/lib/R/etc/Renviron \
+ && echo 'PROJ_LIB=/opt/conda/share/proj'  >> /opt/conda/lib/R/etc/Renviron.site \
+ && echo 'PROJ_DATA=/opt/conda/share/proj' >> /opt/conda/lib/R/etc/Renviron.site \
+ && echo 'Sys.setenv(PROJ_LIB="/opt/conda/share/proj")' >> /opt/conda/lib/R/etc/Rprofile.site \
+ && echo 'Sys.setenv(PROJ_DATA="/opt/conda/share/proj")' >> /opt/conda/lib/R/etc/Rprofile.site \
+ && echo 'options(expressions = 500000)' >> /opt/conda/lib/R/etc/Rprofile.site
+
+ RUN echo '.First <- function() { \
+  Sys.setenv(PROJ_LIB="/opt/conda/share/proj"); \
+  Sys.setenv(PROJ_DATA="/opt/conda/share/proj"); \
+}' >> /opt/conda/lib/R/etc/Rprofile.site
 
 # -------------------------------------------------------------------
 # Remaining CRAN & GitHub packages (Source installs)
