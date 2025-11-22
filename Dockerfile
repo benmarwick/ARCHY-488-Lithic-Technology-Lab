@@ -13,7 +13,8 @@ ENV PROJ_LIB=/opt/conda/share/proj \
 
 # Ensure R sessions inherit the correct variables
 RUN echo 'PROJ_LIB=/opt/conda/share/proj'  >> /opt/conda/lib/R/etc/Renviron \
- && echo 'PROJ_DATA=/opt/conda/share/proj' >> /opt/conda/lib/R/etc/Renviron
+ && echo 'PROJ_DATA=/opt/conda/share/proj' >> /opt/conda/lib/R/etc/Renviron \
+ && echo 'options(expressions = 500000)' >> /opt/conda/lib/R/etc/Rprofile.site
 
 ARG GITHUB_PAT
 ENV GITHUB_PAT=$GITHUB_PAT
