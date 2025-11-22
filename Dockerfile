@@ -81,8 +81,11 @@ RUN mamba install -y -c conda-forge -c bioconda \
     r-rnaturalearth r-rnaturalearthdata r-maps r-measurements \
     r-ade4 r-aqp r-vegan r-rioja r-rmisc r-quarto \
     r-plyr r-pbapply r-curl r-pak bioconductor-ebimage \
-    r-data.table r-jsonlite r-httr  \
-     r-rcarbon  r-afex \
+    r-data.table r-jsonlite r-httr \
+    r-afex \
+    r-extradistr r-rcache r-magic r-linprog r-rcppprogress \
+    r-styler r-ggstance r-rrpp r-rgl r-geometry r-rvcg \
+    r-doparallel r-colorramps r-bezier r-mclust \
  && mamba clean -afy && rm -rf /opt/conda/pkgs/* 
 
 # -------------------------------------------------------------------
@@ -115,9 +118,6 @@ RUN Rscript -e "Sys.setenv(PKG_SYSREQS='false'); \
                  options(pak.num_workers = 1); \
                  pak::pkg_install('dgromer/apa', dependencies = FALSE)" \
     1> /dev/null
-
-
-
 
 # After all installations, clean up duplicates intelligently
 RUN Rscript -e 'conda_lib <- "/opt/conda/lib/R/library";
