@@ -83,8 +83,8 @@ RUN mamba install -y -c conda-forge -c bioconda \
     r-plyr r-pbapply r-curl r-pak bioconductor-ebimage \
     r-data.table r-jsonlite r-httr \
     r-afex \
-    r-extradistr r-rcache r-magic r-linprog r-rcppprogress \
-    r-styler r-ggstance r-rrpp r-rgl r-geometry r-rvcg \
+    r-extradistr r-magic r-linprog r-rcppprogress \
+    r-styler r-ggstance r-rgl r-geometry r-rvcg \
     r-doparallel r-colorramps r-bezier r-mclust \
  && mamba clean -afy && rm -rf /opt/conda/pkgs/* 
 
