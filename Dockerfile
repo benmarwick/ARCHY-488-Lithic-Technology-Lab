@@ -132,6 +132,24 @@ RUN echo 'PROJ_LIB=/opt/conda/share/proj'  >> /home/$NB_USER/.Renviron \
  && echo 'PROJ_DATA=/opt/conda/share/proj' >> /home/$NB_USER/.Renviron \
  && chown $NB_USER:$NB_GID /home/$NB_USER/.Renviron 2>/dev/null || true
 
+ # -------------------------------------------------------------------
+# Install the latest Quarto CLI (includes Deno + Pandoc)
+# -------------------------------------------------------------------
+RUN set -eux; \
+    # Query GitHub API for latest release .deb URL
+    QUARTO_DEB_URL=$( \
+        curl -s https://api.github.com/repos/quarto-dev/quarto-cli/releases/latest \
+        | grep browser_download_url \
+        | grep 'linux-amd64.deb"' \
+        | cut -d '"' -f 4 \
+    ); \
+    echo "Downloading Quarto from: $QUARTO_DEB_URL"; \
+    curl -L "$QUARTO_DEB_URL" -o /tmp/quarto-latest.deb; \
+    apt-get update; \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y /tmp/quarto-latest.deb; \
+    rm /tmp/quarto-latest.deb; \
+    rm -rf /var/lib/apt/lists/*
+
 USER $NB_USER
 
 # -------------------------------------------------------------------
