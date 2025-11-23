@@ -136,19 +136,26 @@ RUN echo 'PROJ_LIB=/opt/conda/share/proj'  >> /home/$NB_USER/.Renviron \
 # Install the latest Quarto CLI (includes Deno + Pandoc)
 # -------------------------------------------------------------------
 RUN set -eux; \
-    # Query GitHub API for latest release .deb URL
+    # Remove the conda version of quarto (R-only, missing tools)
+    mamba remove -y r-quarto || true; \
+    \
+    # Get latest Quarto .deb URL from GitHub API
     QUARTO_DEB_URL=$( \
         curl -s https://api.github.com/repos/quarto-dev/quarto-cli/releases/latest \
-        | grep browser_download_url \
-        | grep 'linux-amd64.deb"' \
-        | cut -d '"' -f 4 \
+        | grep -Eo 'https://[^"]+linux-amd64\.deb' \
+        | head -n 1 \
     ); \
+    if [ -z "$QUARTO_DEB_URL" ]; then \
+        echo "ERROR: Could not determine latest Quarto release URL" && exit 1; \
+    fi; \
     echo "Downloading Quarto from: $QUARTO_DEB_URL"; \
+    \
     curl -L "$QUARTO_DEB_URL" -o /tmp/quarto-latest.deb; \
     apt-get update; \
     DEBIAN_FRONTEND=noninteractive apt-get install -y /tmp/quarto-latest.deb; \
     rm /tmp/quarto-latest.deb; \
     rm -rf /var/lib/apt/lists/*
+
 
 USER $NB_USER
 
