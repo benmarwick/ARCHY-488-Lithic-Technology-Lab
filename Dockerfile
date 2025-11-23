@@ -80,7 +80,7 @@ RUN mamba install -y -c conda-forge -c bioconda \
     r-viridis r-see r-gridgraphics r-here r-readxl r-rio \
     r-factominer r-factoextra r-performance r-fsa r-infer r-psych \
     r-rnaturalearth r-rnaturalearthdata r-maps r-measurements \
-    r-ade4 r-aqp r-vegan r-rioja r-rmisc r-quarto \
+    r-ade4 r-aqp r-vegan r-rioja r-rmisc \
     r-plyr r-pbapply r-curl r-pak bioconductor-ebimage \
     r-data.table r-jsonlite r-httr \
     r-afex  r-ggforce \
@@ -136,9 +136,6 @@ RUN echo 'PROJ_LIB=/opt/conda/share/proj'  >> /home/$NB_USER/.Renviron \
 # Install the latest Quarto CLI (includes Deno + Pandoc)
 # -------------------------------------------------------------------
 RUN set -eux; \
-    # Remove the conda version of quarto (R-only, missing tools)
-    mamba remove -y r-quarto || true; \
-    \
     # Get latest Quarto .deb URL from GitHub API
     QUARTO_DEB_URL=$( \
         curl -s https://api.github.com/repos/quarto-dev/quarto-cli/releases/latest \
