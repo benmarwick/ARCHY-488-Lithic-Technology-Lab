@@ -147,14 +147,7 @@ RUN set -eux; \
     \
     # Install via dpkg, then fix missing deps
     dpkg -i quarto-*.deb || apt-get install -f -y; \
-    rm quarto-*.deb; \
-    \
-    # Confirm Quarto binary is the CLI, not the R package wrapper
-    which quarto; \
-    quarto --version; \
-    which deno; \ 
-    ln -s /opt/quarto/bin/tools/deno /usr/local/bin/deno; \
-    deno --version
+    rm quarto-*.deb; 
 
 
 USER $NB_USER
