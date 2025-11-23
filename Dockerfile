@@ -111,7 +111,7 @@ RUN echo 'PROJ_LIB=/opt/conda/share/proj'  >> /opt/conda/lib/R/etc/Renviron \
 # Install CRAN and GitHub packages
 RUN Rscript -e "\
     install.packages(c( \
-        'tabula', 'tesselle', 'dimensio', 'tidypaleo', 'Bchron', 'geomorph', \
+        'tabula', 'tesselle', 'dimensio', 'tidypaleo', 'Bchron', 'geomorph',  \
         'Momocs', 'folio', 'isopleuros', 'yyjsonr', 'arkhe', 'khroma', 'Morpho' \
     ), quiet = TRUE, Ncpus = parallel::detectCores()); \
     Sys.setenv(PKG_SYSREQS='false'); \
@@ -136,22 +136,22 @@ RUN echo 'PROJ_LIB=/opt/conda/share/proj'  >> /home/$NB_USER/.Renviron \
 # Install the latest Quarto CLI (includes Deno + Pandoc)
 # -------------------------------------------------------------------
 RUN set -eux; \
-    # Get latest Quarto .deb URL from GitHub API
-    QUARTO_DEB_URL=$( \
+    # Download the latest Quarto .deb URL from GitHub
+    QUARTO_DL_URL=$( \
         curl -s https://api.github.com/repos/quarto-dev/quarto-cli/releases/latest \
-        | grep -Eo 'https://[^"]+linux-amd64\.deb' \
+        | grep -oP '"browser_download_url": "\K[^"]*linux-amd64\.deb' \
         | head -n 1 \
     ); \
-    if [ -z "$QUARTO_DEB_URL" ]; then \
-        echo "ERROR: Could not determine latest Quarto release URL" && exit 1; \
-    fi; \
-    echo "Downloading Quarto from: $QUARTO_DEB_URL"; \
+    echo "Downloading: $QUARTO_DL_URL"; \
+    curl -LO "$QUARTO_DL_URL"; \
     \
-    curl -L "$QUARTO_DEB_URL" -o /tmp/quarto-latest.deb; \
-    apt-get update; \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y /tmp/quarto-latest.deb; \
-    rm /tmp/quarto-latest.deb; \
-    rm -rf /var/lib/apt/lists/*
+    # Install via dpkg, then fix missing deps
+    dpkg -i quarto-*.deb || apt-get install -f -y; \
+    rm quarto-*.deb; \
+    \
+    # Confirm Quarto binary is the CLI, not the R package wrapper
+    which quarto; \
+    quarto --version
 
 
 USER $NB_USER
