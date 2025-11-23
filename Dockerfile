@@ -153,6 +153,7 @@ RUN set -eux; \
     which quarto; \
     quarto --version; \
     which deno; \ 
+    ln -s /opt/quarto/bin/tools/deno /usr/local/bin/deno; \
     deno --version
 
 
