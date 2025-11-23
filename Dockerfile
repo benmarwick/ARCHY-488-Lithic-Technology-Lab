@@ -28,7 +28,7 @@ RUN conda config --system --set channel_priority strict
 # 1. Install system libs (Keep this, it's efficient)
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     build-essential \
-    gcc-10 g++-10 gfortran \
+    gcc-10 g++-10 gfortran libatomic1 \
     liblapack-dev libblas-dev libopenblas-dev \
     libcurl4-openssl-dev libxml2-dev libgit2-dev libssl-dev \
     libpng-dev libtiff-dev libfftw3-dev \
@@ -151,7 +151,9 @@ RUN set -eux; \
     \
     # Confirm Quarto binary is the CLI, not the R package wrapper
     which quarto; \
-    quarto --version
+    quarto --version; \
+    which deno; \ 
+    deno --version
 
 
 USER $NB_USER
