@@ -86,7 +86,7 @@ RUN mamba install -y -c conda-forge -c bioconda \
     r-afex  r-ggforce \
     r-extradistr r-magic r-linprog r-rcppprogress \
     r-styler r-ggstance r-rgl r-geometry r-rvcg \
-    r-doparallel r-colorramps r-bezier r-mclust \
+    r-doparallel r-colorramps r-bezier r-mclust r-ggtern \
  && mamba clean -y  -t && rm -rf /opt/conda/pkgs/*
 
  # NOW set the environment variables after PROJ is installed
