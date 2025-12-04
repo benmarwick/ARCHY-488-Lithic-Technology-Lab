@@ -82,7 +82,7 @@ RUN mamba install -y -c conda-forge -c bioconda \
     r-rnaturalearth r-rnaturalearthdata r-maps r-measurements \
     r-ade4 r-aqp r-vegan r-rioja r-rmisc \
     r-plyr r-pbapply r-curl r-pak bioconductor-ebimage \
-    r-data.table r-jsonlite r-httr \
+    r-data.table r-jsonlite r-httr r-geomtextpath \
     r-afex  r-ggforce  r-baseline r-signal \
     r-extradistr r-magic r-linprog r-rcppprogress \
     r-styler r-ggstance r-rgl r-geometry r-rvcg \
