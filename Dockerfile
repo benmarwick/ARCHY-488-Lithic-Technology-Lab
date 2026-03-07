@@ -69,11 +69,8 @@ RUN mkdir -p /opt/conda/lib/R/site-library \
 # MAMBA: Core R packages and libraries from conda
 # -------------------------------------------------------------------
 
-RUN mamba install -y -c conda-forge \
-    r-base=4.4.* proj proj-data gdal geos sqlite fftw \
- && mamba clean -afy 
-
 RUN mamba install -y -c conda-forge -c bioconda \
+    r-base=4.4.* proj proj-data gdal geos sqlite fftw \
     r-sf r-terra r-mass r-openmx r-mbess \
     r-broom r-cowplot r-ggbeeswarm r-ggally r-ggcorrplot r-ggrepel \
     r-ggpmisc r-ggtext r-ggridges r-ggmap r-plotrix r-rcolorbrewer \
@@ -87,7 +84,10 @@ RUN mamba install -y -c conda-forge -c bioconda \
     r-extradistr r-magic r-linprog r-rcppprogress \
     r-styler r-ggstance r-rgl r-geometry r-rvcg \
     r-doparallel r-colorramps r-bezier r-mclust r-ggtern \
- && mamba clean -y  -t && rm -rf /opt/conda/pkgs/*
+&& mamba clean -afy \
+&& conda clean -afy \
+&& find /opt/conda -name "*.pyc" -delete \
+&& find /opt/conda -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
 
  # NOW set the environment variables after PROJ is installed
 RUN echo 'PROJ_LIB=/opt/conda/share/proj'  >> /opt/conda/lib/R/etc/Renviron \
@@ -167,6 +167,10 @@ RUN set -eux; \
     typst --version
 
 USER $NB_USER
+
+# check size
+RUN du -sh /opt/conda/lib/python*/site-packages 2>/dev/null | sort -h | tail -20
+RUN du -sh /opt/conda/lib/*.so* 2>/dev/null | sort -h | tail -20
 
 # -------------------------------------------------------------------
 # Metadata
