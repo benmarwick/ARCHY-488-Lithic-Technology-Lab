@@ -149,6 +149,22 @@ RUN set -eux; \
     dpkg -i quarto-*.deb || apt-get install -f -y; \
     rm quarto-*.deb; 
 
+# -------------------------------------------------------------------
+# Install the latest Typst
+# -------------------------------------------------------------------
+RUN set -eux; \
+    TYPST_DL_URL=$( \
+        curl -s https://api.github.com/repos/typst/typst/releases/latest \
+        | grep -oP '"browser_download_url": "\K[^"]*x86_64-unknown-linux-musl\.tar\.xz' \
+        | head -n 1 \
+    ); \
+    echo "Downloading: $TYPST_DL_URL"; \
+    curl -L "$TYPST_DL_URL" -o typst.tar.xz; \
+    tar -xf typst.tar.xz; \
+    mv typst-x86_64-unknown-linux-musl/typst /usr/local/bin/typst; \
+    chmod +x /usr/local/bin/typst; \
+    rm -rf typst.tar.xz typst-x86_64-unknown-linux-musl; \
+    typst --version
 
 USER $NB_USER
 
