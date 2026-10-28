@@ -70,18 +70,19 @@ RUN mamba install -y -c conda-forge -c bioconda \
     r-viridis r-see r-gridgraphics r-here r-readxl r-rio \
     r-factominer r-factoextra r-performance r-fsa r-infer r-psych \
     r-rnaturalearth r-rnaturalearthdata r-maps r-measurements \
-    r-ade4 r-aqp r-vegan r-rioja r-rmisc \
+    r-ade4 r-aqp r-vegan r-rioja r-rmisc r-hmisc \
     r-plyr r-pbapply r-curl r-pak bioconductor-ebimage \
     r-data.table r-jsonlite r-httr r-geomtextpath \
     r-afex  r-ggforce  r-baseline r-signal \
     r-extradistr r-magic r-linprog r-rcppprogress \
     r-styler r-ggstance r-rgl r-geometry r-rvcg \
     r-doparallel r-colorramps r-bezier r-mclust r-ggtern \
-    r-tidyverse r-tidymodels r-magick  r-remotes r-morpho \
-&& mamba clean -afy \
-&& conda clean -afy \
-&& find /opt/conda -name "*.pyc" -delete \
-&& find /opt/conda -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
+    r-tidyverse r-tidymodels r-magick r-remotes \
+ && mamba clean -afy \
+ && conda clean -afy \
+ && { find /opt/conda -name "*.pyc" -delete; \
+      find /opt/conda -name "__pycache__" -type d -prune -exec rm -rf {} +; \
+      true; } 2>/dev/null
 
  # NOW set the environment variables after PROJ is installed
 RUN echo 'PROJ_LIB=/opt/conda/share/proj'  >> /opt/conda/lib/R/etc/Renviron \
