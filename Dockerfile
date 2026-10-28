@@ -77,7 +77,8 @@ RUN mamba install -y -c conda-forge -c bioconda \
     r-extradistr r-magic r-linprog r-rcppprogress \
     r-styler r-ggstance r-rgl r-geometry r-rvcg \
     r-doparallel r-colorramps r-bezier r-mclust r-ggtern \
-    r-tidyverse r-tidymodels r-magick r-remotes \
+    r-tidyverse r-tidymodels r-magick r-remotes  r-lme4 \
+    "sysroot_linux-64>=2.28" \
  && mamba clean -afy \
  && conda clean -afy \
  && { find /opt/conda -name "*.pyc" -delete; \
@@ -115,7 +116,6 @@ RUN Rscript -e "\
         'achetverikov/apastats', \
         'benmarwick/polygonoverlap', \
         'dgromer/apa'), dependencies = FALSE, upgrade = 'never'); \
-    install.packages('lme4', repos = 'https://cloud.r-project.org', type = 'source'); \
     pkgs <- c('tabula','tesselle','dimensio','tidypaleo','Bchron','geomorph', \
               'folio','isopleuros','yyjsonr','arkhe','khroma','Morpho','Momocs', \
               'c14bazAAR','apastats2','polygonoverlap','apa','lme4'); \
