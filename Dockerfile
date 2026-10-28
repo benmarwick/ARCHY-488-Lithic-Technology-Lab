@@ -84,7 +84,7 @@ RUN mamba install -y -c conda-forge -c bioconda \
     r-extradistr r-magic r-linprog r-rcppprogress \
     r-styler r-ggstance r-rgl r-geometry r-rvcg \
     r-doparallel r-colorramps r-bezier r-mclust r-ggtern \
-    r-tidyverse r-tidymodels r-rsample r-yardstick r-magick \
+    r-tidyverse r-tidymodels r-magick \
 && mamba clean -afy \
 && conda clean -afy \
 && find /opt/conda -name "*.pyc" -delete \
@@ -127,9 +127,11 @@ RUN Rscript -e "\
 RUN Rscript -e "\
     options(timeout = 1200); \
     install.packages(c('torch', 'torchvision', 'luz'), \
-                     Ncpus = parallel::detectCores()); \
+    Ncpus = parallel::detectCores()); \
     torch::install_torch(); \
-    library(torch); stopifnot(torch_is_installed())"
+    library(torch); stopifnot(torch_is_installed()); \
+    print(torch_randn(2, 2)); \
+    library(torchvision); library(luz)"
     
 # After all installations, clean up duplicates intelligently
 COPY cleanup.R /tmp/cleanup.R
