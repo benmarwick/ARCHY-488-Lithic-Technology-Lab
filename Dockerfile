@@ -49,15 +49,8 @@ RUN echo "CXXFLAGS += -O3 -march=core2 -msse2" >> /opt/conda/lib/R/etc/Makeconf
 # R REPO CONFIGURATION (Binaries)
 # -------------------------------------------------------------------
 # 1. Posit Package Manager (CRAN Binaries)
-# 2. r-universe (GitHub Binaries for Momocs and ropensci)
-RUN Rscript -e 'options(repos = c( \
-    CRAN = "https://packagemanager.posit.co/cran/__linux__/jammy/latest", \
-    ropensci = "https://ropensci.r-universe.dev", \
-    momx = "https://momx.r-universe.dev"));' \
-    && echo 'options(repos = c( \
-    CRAN = "https://packagemanager.posit.co/cran/__linux__/jammy/latest", \
-    ropensci = "https://ropensci.r-universe.dev", \
-    momx = "https://momx.r-universe.dev"))' >> /opt/conda/lib/R/etc/Rprofile.site
+RUN echo 'options(repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/jammy/latest"))' \
+    >> /opt/conda/lib/R/etc/Rprofile.site
 
 # -------------------------------------------------------------------
 # Ensure site-library exists
@@ -84,7 +77,7 @@ RUN mamba install -y -c conda-forge -c bioconda \
     r-extradistr r-magic r-linprog r-rcppprogress \
     r-styler r-ggstance r-rgl r-geometry r-rvcg \
     r-doparallel r-colorramps r-bezier r-mclust r-ggtern \
-    r-tidyverse r-tidymodels r-magick \
+    r-tidyverse r-tidymodels r-magick  r-remotes r-morpho \
 && mamba clean -afy \
 && conda clean -afy \
 && find /opt/conda -name "*.pyc" -delete \
@@ -112,17 +105,20 @@ RUN echo 'PROJ_LIB=/opt/conda/share/proj'  >> /opt/conda/lib/R/etc/Renviron \
 # Install CRAN and GitHub packages
 RUN Rscript -e "\
     install.packages(c( \
-        'tabula', 'tesselle', 'dimensio', 'tidypaleo', 'Bchron', 'geomorph',  \
-        'Momocs', 'folio', 'isopleuros', 'yyjsonr', 'arkhe', 'khroma', 'Morpho' \
-    ), quiet = TRUE, Ncpus = parallel::detectCores()); \
-    Sys.setenv(PKG_SYSREQS='false'); \
-    options(pak.num_workers = 1); \
-    pak::pkg_install(c( \
+        'tabula', 'tesselle', 'dimensio', 'tidypaleo', 'Bchron', 'geomorph', \
+        'folio', 'isopleuros', 'yyjsonr', 'arkhe', 'khroma' \
+    ), Ncpus = parallel::detectCores()); \
+    remotes::install_github('MomX/Momocs', upgrade = 'never'); \
+    remotes::install_github(c( \
         'ropensci/c14bazAAR', \
         'achetverikov/apastats', \
         'benmarwick/polygonoverlap', \
-        'dgromer/apa'), dependencies = FALSE)" \
-    1> /dev/null
+        'dgromer/apa'), dependencies = FALSE, upgrade = 'never'); \
+    pkgs <- c('tabula','tesselle','dimensio','tidypaleo','Bchron','geomorph', \
+              'folio','isopleuros','yyjsonr','arkhe','khroma','Morpho','Momocs', \
+              'c14bazAAR','apastats','polygonoverlap','apa'); \
+    missing <- pkgs[!vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)]; \
+    if (length(missing)) stop('Failed to install: ', paste(missing, collapse = ', '))"
 
 RUN Rscript -e "\
     options(timeout = 1200); \
