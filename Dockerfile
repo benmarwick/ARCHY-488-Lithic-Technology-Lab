@@ -107,7 +107,7 @@ RUN echo 'PROJ_LIB=/opt/conda/share/proj'  >> /opt/conda/lib/R/etc/Renviron \
 RUN Rscript -e "\
     install.packages(c( \
         'tabula', 'tesselle', 'dimensio', 'tidypaleo', 'Bchron', 'geomorph', \
-        'folio', 'isopleuros', 'yyjsonr', 'arkhe', 'khroma' \
+        'folio', 'isopleuros', 'yyjsonr', 'arkhe', 'khroma', 'Morpho' \
     ), Ncpus = parallel::detectCores()); \
     remotes::install_github('MomX/Momocs', upgrade = 'never'); \
     remotes::install_github(c( \
@@ -115,9 +115,10 @@ RUN Rscript -e "\
         'achetverikov/apastats', \
         'benmarwick/polygonoverlap', \
         'dgromer/apa'), dependencies = FALSE, upgrade = 'never'); \
+    install.packages('lme4', repos = 'https://cloud.r-project.org', type = 'source'); \
     pkgs <- c('tabula','tesselle','dimensio','tidypaleo','Bchron','geomorph', \
               'folio','isopleuros','yyjsonr','arkhe','khroma','Morpho','Momocs', \
-              'c14bazAAR','apastats','polygonoverlap','apa'); \
+              'c14bazAAR','apastats2','polygonoverlap','apa','lme4'); \
     missing <- pkgs[!vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)]; \
     if (length(missing)) stop('Failed to install: ', paste(missing, collapse = ', '))"
 
