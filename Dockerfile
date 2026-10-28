@@ -125,10 +125,10 @@ RUN Rscript -e "\
 RUN Rscript -e "\
     options(timeout = 1200); \
     install.packages(c('torch', 'torchvision', 'luz'), \
-    Ncpus = parallel::detectCores()); \
-    torch::install_torch(); \
-    library(torch); stopifnot(torch_is_installed()); \
-    print(torch_randn(2, 2)); \
+                     Ncpus = parallel::detectCores()); \
+    torch::install_torch()" \
+ && Rscript -e "\
+    library(torch); print(torch_randn(2, 2)); \
     library(torchvision); library(luz)"
     
 # After all installations, clean up duplicates intelligently
