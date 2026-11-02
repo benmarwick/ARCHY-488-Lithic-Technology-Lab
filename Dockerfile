@@ -100,12 +100,6 @@ RUN echo 'PROJ_LIB=/opt/conda/share/proj'  >> /opt/conda/lib/R/etc/Renviron \
   Sys.setenv(PROJ_DATA="/opt/conda/share/proj"); \
 }' >> /opt/conda/lib/R/etc/Rprofile.site
 
-# --- Copy RStudio preferences ---
-# Ensure the config directory exists and copy the preferences file
-RUN mkdir -p /home/${NB_USER}/.config/rstudio/
-COPY rstudio-prefs.json /home/${NB_USER}/.config/rstudio/rstudio-prefs.json
-
-
 # -------------------------------------------------------------------
 # Remaining CRAN & GitHub packages (Source installs)
 # -------------------------------------------------------------------
@@ -209,6 +203,12 @@ RUN set -eux; \
     install -m 0755 /tmp/opencode /usr/local/bin/opencode; \
     rm -f /tmp/opencode.tar.gz /tmp/opencode; \
     opencode --version
+
+# -------------------------------------------------------------------
+# Default RStudio preferences for all users
+# -------------------------------------------------------------------
+COPY rstudio-prefs.json /etc/rstudio/rstudio-prefs.json
+RUN chmod 644 /etc/rstudio/rstudio-prefs.json
 
 USER $NB_USER
 
