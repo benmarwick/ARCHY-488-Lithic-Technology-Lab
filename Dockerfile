@@ -100,6 +100,12 @@ RUN echo 'PROJ_LIB=/opt/conda/share/proj'  >> /opt/conda/lib/R/etc/Renviron \
   Sys.setenv(PROJ_DATA="/opt/conda/share/proj"); \
 }' >> /opt/conda/lib/R/etc/Rprofile.site
 
+# --- Copy RStudio preferences ---
+# Ensure the config directory exists and copy the preferences file
+RUN mkdir -p /home/${NB_USER}/.config/rstudio/
+COPY rstudio-prefs.json /home/${NB_USER}/.config/rstudio/rstudio-prefs.json
+
+
 # -------------------------------------------------------------------
 # Remaining CRAN & GitHub packages (Source installs)
 # -------------------------------------------------------------------
@@ -173,6 +179,36 @@ RUN set -eux; \
     chmod +x /usr/local/bin/typst; \
     rm -rf typst.tar.xz typst-x86_64-unknown-linux-musl; \
     typst --version
+
+# -------------------------------------------------------------------
+# Install the opencode CLI (AI coding agent)
+# OPENCODE_VERSION=latest picks the highest version number among the
+# repo's releases. GitHub's own "latest" flag cannot be used because
+# the maintainers still publish 1.x releases flagged as latest
+# alongside 2.x. Pin a version with --build-arg OPENCODE_VERSION=2.2.5
+# The "baseline" build does not require AVX2, so it runs on older
+# CPUs as well as newer ones. /usr/local/bin is on every user's PATH,
+# including the RStudio Terminal.
+# -------------------------------------------------------------------
+ARG OPENCODE_VERSION=latest
+RUN set -eux; \
+    if [ "$OPENCODE_VERSION" = "latest" ]; then \
+      OPENCODE_VERSION=$( \
+        curl -fsSL ${GITHUB_PAT:+-H "Authorization: Bearer $GITHUB_PAT"} \
+          "https://api.github.com/repos/anomalyco/opencode/releases?per_page=100" \
+        | grep -oP '"tag_name": "v\K[0-9]+\.[0-9]+\.[0-9]+(?=")' \
+        | sort -V | tail -n 1 \
+      ); \
+    fi; \
+    test -n "$OPENCODE_VERSION"; \
+    echo "Installing opencode v$OPENCODE_VERSION"; \
+    curl -fsSL \
+      "https://github.com/anomalyco/opencode/releases/download/v${OPENCODE_VERSION}/opencode-linux-x64-baseline.tar.gz" \
+      -o /tmp/opencode.tar.gz; \
+    tar -xzf /tmp/opencode.tar.gz -C /tmp; \
+    install -m 0755 /tmp/opencode /usr/local/bin/opencode; \
+    rm -f /tmp/opencode.tar.gz /tmp/opencode; \
+    opencode --version
 
 USER $NB_USER
 
