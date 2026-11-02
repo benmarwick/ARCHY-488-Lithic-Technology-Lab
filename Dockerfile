@@ -77,7 +77,7 @@ RUN mamba install -y -c conda-forge -c bioconda \
     r-extradistr r-magic r-linprog r-rcppprogress \
     r-styler r-ggstance r-rgl r-geometry r-rvcg \
     r-doparallel r-colorramps r-bezier r-mclust r-ggtern \
-    r-tidyverse r-tidymodels r-magick r-remotes  r-lme4 \
+    r-tidyverse r-tidymodels r-magick r-remotes r-lime r-lme4 \
     "sysroot_linux-64>=2.28" \
  && mamba clean -afy \
  && conda clean -afy \
