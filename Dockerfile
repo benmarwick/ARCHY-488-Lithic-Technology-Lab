@@ -202,7 +202,11 @@ RUN set -eux; \
     tar -xzf /tmp/opencode.tar.gz -C /tmp; \
     install -m 0755 /tmp/opencode /usr/local/bin/opencode; \
     rm -f /tmp/opencode.tar.gz /tmp/opencode; \
-    opencode --version
+    # Run the check with a throwaway HOME: as root with HOME=/home/jovyan,
+    # opencode would create root-owned ~/.config, ~/.local and ~/.cache
+    # dirs that jovyan then cannot write to.
+    HOME=/tmp/opencode-home opencode --version; \
+    rm -rf /tmp/opencode-home
 
 # -------------------------------------------------------------------
 # Default RStudio preferences for all users
