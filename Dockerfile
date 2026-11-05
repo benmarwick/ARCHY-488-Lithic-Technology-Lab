@@ -78,7 +78,7 @@ RUN mamba install -y -c conda-forge -c bioconda \
     r-styler r-ggstance r-rgl r-geometry r-rvcg \
     r-doparallel r-colorramps r-bezier r-mclust r-ggtern \
     r-tidyverse r-tidymodels r-magick r-remotes r-lime r-lme4 \
-    r-stm r-rtsne r-rsvd r-tidytext r-reshape2 \
+    r-stm r-rtsne r-rsvd r-tidytext r-reshape2 r-duckdb \
     "sysroot_linux-64>=2.28" \
  && mamba clean -afy \
  && conda clean -afy \
