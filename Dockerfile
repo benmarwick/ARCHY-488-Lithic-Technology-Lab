@@ -78,6 +78,7 @@ RUN mamba install -y -c conda-forge -c bioconda \
     r-styler r-ggstance r-rgl r-geometry r-rvcg \
     r-doparallel r-colorramps r-bezier r-mclust r-ggtern \
     r-tidyverse r-tidymodels r-magick r-remotes r-lime r-lme4 \
+    r-stm r-rtsne r-rsvd r-tidytext r-reshape2 \
     "sysroot_linux-64>=2.28" \
  && mamba clean -afy \
  && conda clean -afy \
@@ -105,20 +106,22 @@ RUN echo 'PROJ_LIB=/opt/conda/share/proj'  >> /opt/conda/lib/R/etc/Renviron \
 # -------------------------------------------------------------------
 
 # Install CRAN and GitHub packages
+# GitHub vectors are named by package name because a repo name can
+# differ from its package name (achetverikov/apastats is 'apastats2').
 RUN Rscript -e "\
-    install.packages(c( \
-        'tabula', 'tesselle', 'dimensio', 'tidypaleo', 'Bchron', 'geomorph', \
-        'folio', 'isopleuros', 'yyjsonr', 'arkhe', 'khroma', 'Morpho' \
-    ), Ncpus = parallel::detectCores()); \
-    remotes::install_github('MomX/Momocs', upgrade = 'never'); \
-    remotes::install_github(c( \
-        'ropensci/c14bazAAR', \
-        'achetverikov/apastats', \
-        'benmarwick/polygonoverlap', \
-        'dgromer/apa'), dependencies = FALSE, upgrade = 'never'); \
-    pkgs <- c('tabula','tesselle','dimensio','tidypaleo','Bchron','geomorph', \
-              'folio','isopleuros','yyjsonr','arkhe','khroma','Morpho','Momocs', \
-              'c14bazAAR','apastats2','polygonoverlap','apa','lme4'); \
+    cran <- c('tabula', 'tesselle', 'dimensio', 'tidypaleo', 'Bchron', \
+              'geomorph', 'folio', 'isopleuros', 'yyjsonr', 'arkhe', \
+              'khroma', 'Morpho', 'ragnar'); \
+    gh <- c(Momocs = 'MomX/Momocs'); \
+    gh_nodeps <- c(c14bazAAR      = 'ropensci/c14bazAAR', \
+                   apastats2      = 'achetverikov/apastats', \
+                   polygonoverlap = 'benmarwick/polygonoverlap', \
+                   apa            = 'dgromer/apa'); \
+    install.packages(cran, Ncpus = parallel::detectCores()); \
+    remotes::install_github(unname(gh), upgrade = 'never'); \
+    remotes::install_github(unname(gh_nodeps), dependencies = FALSE, \
+                            upgrade = 'never'); \
+    pkgs <- c(cran, names(gh), names(gh_nodeps), 'lme4'); \
     missing <- pkgs[!vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)]; \
     if (length(missing)) stop('Failed to install: ', paste(missing, collapse = ', '))"
 
@@ -130,16 +133,6 @@ RUN Rscript -e "\
  && Rscript -e "\
     library(torch); print(torch_randn(2, 2)); \
     library(torchvision); library(luz)"
-
-# Text-analysis packages for the ARCHY 459 module 6 lab (topic models
-# and embeddings). Rtsne and rsvd are needed by stm's spectral
-# initialisation with K = 0; reshape2 is needed by tidytext::tidy() on
-# stm fits; ragnar provides embed_ollama().
-RUN Rscript -e "\
-    pkgs <- c('stm', 'Rtsne', 'rsvd', 'tidytext', 'reshape2', 'ragnar'); \
-    install.packages(pkgs, Ncpus = parallel::detectCores()); \
-    missing <- pkgs[!vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)]; \
-    if (length(missing)) stop('Failed to install: ', paste(missing, collapse = ', '))"
 
 # After all installations, clean up duplicates intelligently
 COPY cleanup.R /tmp/cleanup.R
