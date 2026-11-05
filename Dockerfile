@@ -130,7 +130,17 @@ RUN Rscript -e "\
  && Rscript -e "\
     library(torch); print(torch_randn(2, 2)); \
     library(torchvision); library(luz)"
-    
+
+# Text-analysis packages for the ARCHY 459 module 6 lab (topic models
+# and embeddings). Rtsne and rsvd are needed by stm's spectral
+# initialisation with K = 0; reshape2 is needed by tidytext::tidy() on
+# stm fits; ragnar provides embed_ollama().
+RUN Rscript -e "\
+    pkgs <- c('stm', 'Rtsne', 'rsvd', 'tidytext', 'reshape2', 'ragnar'); \
+    install.packages(pkgs, Ncpus = parallel::detectCores()); \
+    missing <- pkgs[!vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)]; \
+    if (length(missing)) stop('Failed to install: ', paste(missing, collapse = ', '))"
+
 # After all installations, clean up duplicates intelligently
 COPY cleanup.R /tmp/cleanup.R
 RUN Rscript /tmp/cleanup.R
@@ -207,6 +217,46 @@ RUN set -eux; \
     # dirs that jovyan then cannot write to.
     HOME=/tmp/opencode-home opencode --version; \
     rm -rf /tmp/opencode-home
+
+# -------------------------------------------------------------------
+# Ollama (CPU only) with the embeddinggemma:300m model, for the
+# ARCHY 459 module 6 lab. Each student container runs its own server
+# on 127.0.0.1:11434; nothing starts it automatically, so run
+# `ollama serve` (Terminal) or start it from R when needed.
+# The model lives outside /home/jovyan so the home volume cannot hide
+# it. GPU libraries are deleted because the hub has no GPUs.
+# Pin a different release with --build-arg OLLAMA_VERSION=0.40.13
+# -------------------------------------------------------------------
+ARG OLLAMA_VERSION=0.40.14
+ENV OLLAMA_MODELS=/opt/ollama/models
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends zstd; \
+    rm -rf /var/lib/apt/lists/*; \
+    curl -fsSL \
+      "https://github.com/ollama/ollama/releases/download/v${OLLAMA_VERSION}/ollama-linux-amd64.tar.zst" \
+      | tar --zstd -x -C /usr/local; \
+    rm -rf /usr/local/lib/ollama/cuda_* \
+           /usr/local/lib/ollama/rocm* \
+           /usr/local/lib/ollama/vulkan*; \
+    mkdir -p "$OLLAMA_MODELS"; \
+    # Start a temporary server to pull the model, then stop it.
+    # Throwaway HOME so root does not create files in /home/jovyan.
+    (HOME=/tmp/ollama-home ollama serve > /tmp/ollama-build.log 2>&1 &); \
+    for i in $(seq 1 60); do \
+      curl -fs http://127.0.0.1:11434/api/version && break; \
+      sleep 1; \
+    done; \
+    HOME=/tmp/ollama-home ollama pull embeddinggemma:300m; \
+    pkill ollama || true; \
+    rm -rf /tmp/ollama-home /tmp/ollama-build.log; \
+    chmod -R a+rX /opt/ollama; \
+    # RStudio sessions may not see Docker ENV values (see the PROJ
+    # workaround above), so set OLLAMA_MODELS for R and login shells
+    echo 'OLLAMA_MODELS=/opt/ollama/models' >> /opt/conda/lib/R/etc/Renviron.site; \
+    echo 'export OLLAMA_MODELS=/opt/ollama/models' > /etc/profile.d/ollama.sh; \
+    chmod 644 /etc/profile.d/ollama.sh; \
+    ollama --version
 
 # -------------------------------------------------------------------
 # Default RStudio preferences for all users
