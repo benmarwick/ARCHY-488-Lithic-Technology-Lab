@@ -71,7 +71,7 @@ RUN mamba install -y -c conda-forge -c bioconda \
     r-factominer r-factoextra r-performance r-fsa r-infer r-psych \
     r-rnaturalearth r-rnaturalearthdata r-maps r-measurements \
     r-ade4 r-aqp r-vegan r-rioja r-rmisc r-hmisc \
-    r-plyr r-pbapply r-curl r-pak bioconductor-ebimage \
+    r-plyr r-pbapply r-curl bioconductor-ebimage \
     r-data.table r-jsonlite r-httr r-geomtextpath \
     r-afex  r-ggforce  r-baseline r-signal \
     r-extradistr r-magic r-linprog r-rcppprogress \
@@ -81,7 +81,6 @@ RUN mamba install -y -c conda-forge -c bioconda \
     r-stm r-rtsne r-rsvd r-tidytext r-reshape2 r-duckdb \
     "sysroot_linux-64>=2.28" \
  && mamba clean -afy \
- && conda clean -afy \
  && { find /opt/conda -name "*.pyc" -delete; \
       find /opt/conda -name "__pycache__" -type d -prune -exec rm -rf {} +; \
       true; } 2>/dev/null
@@ -104,6 +103,16 @@ RUN echo 'PROJ_LIB=/opt/conda/share/proj'  >> /opt/conda/lib/R/etc/Renviron \
 # -------------------------------------------------------------------
 # Remaining CRAN & GitHub packages (Source installs)
 # -------------------------------------------------------------------
+
+# Install pak from its own binary repository. The conda-forge r-pak
+# build (0.11.2) bundles a cli.so that needs GLIBC_2.38, but this
+# Ubuntu 22.04 base image has glibc 2.35, so pak fails to load.
+# The r-lib binaries are self-contained and load here.
+RUN Rscript -e "\
+    install.packages('pak', repos = sprintf( \
+      'https://r-lib.github.io/p/pak/stable/%s/%s/%s', \
+      .Platform\$pkgType, R.Version()\$os, R.Version()\$arch)); \
+    pak::pak_sitrep()"
 
 # Install CRAN and GitHub packages with pak, which resolves all refs
 # and dependencies before installing anything.
