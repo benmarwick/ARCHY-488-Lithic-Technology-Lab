@@ -108,6 +108,8 @@ RUN echo 'PROJ_LIB=/opt/conda/share/proj'  >> /opt/conda/lib/R/etc/Renviron \
 # build (0.11.2) bundles a cli.so that needs GLIBC_2.38, but this
 # Ubuntu 22.04 base image has glibc 2.35, so pak fails to load.
 # The r-lib binaries are self-contained and load here.
+# conda still installs its r-pak as a dependency of r-usethis; that
+# copy sits in /opt/conda/lib/R/library and cleanup.R removes it.
 RUN Rscript -e "\
     install.packages('pak', repos = sprintf( \
       'https://r-lib.github.io/p/pak/stable/%s/%s/%s', \
@@ -118,6 +120,11 @@ RUN Rscript -e "\
 # and dependencies before installing anything.
 # GitHub vectors are named by package name because a repo name can
 # differ from its package name (achetverikov/apastats is 'apastats2').
+# lib = .libPaths() makes pak count packages already in conda's
+# library (and pak itself) as installed. With only the default
+# target library, pak reinstalled packages conda already had (sf,
+# s2, units, cli, ...) from Posit binaries and overwrote its own
+# running copy, which corrupted it mid-install.
 # PKG_SYSREQS=false stops pak from apt-installing system libraries
 # that could clash with the conda-forge GDAL/PROJ/GEOS stack.
 ENV PKG_SYSREQS=false
@@ -132,9 +139,10 @@ RUN Rscript -e "\
                    apastats2      = 'achetverikov/apastats', \
                    polygonoverlap = 'benmarwick/polygonoverlap', \
                    apa            = 'dgromer/apa'); \
-    pak::pkg_install(c(cran, unname(gh)), upgrade = FALSE, ask = FALSE); \
-    pak::pkg_install(unname(gh_nodeps), dependencies = FALSE, \
+    pak::pkg_install(c(cran, unname(gh)), lib = .libPaths(), \
                      upgrade = FALSE, ask = FALSE); \
+    pak::pkg_install(unname(gh_nodeps), lib = .libPaths(), \
+                     dependencies = FALSE, upgrade = FALSE, ask = FALSE); \
     pkgs <- c(cran, names(gh), names(gh_nodeps), 'lme4'); \
     missing <- pkgs[!vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)]; \
     if (length(missing)) stop('Failed to install: ', paste(missing, collapse = ', '))"
