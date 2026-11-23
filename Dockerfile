@@ -105,22 +105,27 @@ RUN echo 'PROJ_LIB=/opt/conda/share/proj'  >> /opt/conda/lib/R/etc/Renviron \
 # Remaining CRAN & GitHub packages (Source installs)
 # -------------------------------------------------------------------
 
-# Install CRAN and GitHub packages
+# Install CRAN and GitHub packages with pak, which resolves all refs
+# and dependencies before installing anything.
 # GitHub vectors are named by package name because a repo name can
 # differ from its package name (achetverikov/apastats is 'apastats2').
+# PKG_SYSREQS=false stops pak from apt-installing system libraries
+# that could clash with the conda-forge GDAL/PROJ/GEOS stack.
+ENV PKG_SYSREQS=false
 RUN Rscript -e "\
     cran <- c('tabula', 'tesselle', 'dimensio', 'tidypaleo', 'Bchron', \
               'geomorph', 'folio', 'isopleuros', 'yyjsonr', 'arkhe', \
               'khroma', 'Morpho', 'ragnar'); \
-    gh <- c(Momocs = 'MomX/Momocs'); \
+    gh <- c(Momocs   = 'MomX/Momocs', \
+            iptools  = 'hrbrmstr/iptools', \
+            livecode = 'rundel/livecode'); \
     gh_nodeps <- c(c14bazAAR      = 'ropensci/c14bazAAR', \
                    apastats2      = 'achetverikov/apastats', \
                    polygonoverlap = 'benmarwick/polygonoverlap', \
                    apa            = 'dgromer/apa'); \
-    install.packages(cran, Ncpus = parallel::detectCores()); \
-    remotes::install_github(unname(gh), upgrade = 'never'); \
-    remotes::install_github(unname(gh_nodeps), dependencies = FALSE, \
-                            upgrade = 'never'); \
+    pak::pkg_install(c(cran, unname(gh)), upgrade = FALSE, ask = FALSE); \
+    pak::pkg_install(unname(gh_nodeps), dependencies = FALSE, \
+                     upgrade = FALSE, ask = FALSE); \
     pkgs <- c(cran, names(gh), names(gh_nodeps), 'lme4'); \
     missing <- pkgs[!vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)]; \
     if (length(missing)) stop('Failed to install: ', paste(missing, collapse = ', '))"
